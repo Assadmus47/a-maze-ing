@@ -48,3 +48,16 @@ class Maze:
             returns bool result True if there is a wall , False if there isnt.
         """
         return bool(self.grid[y][x] & direction)
+
+    def remove_wall(self, x: int, y: int, direction: int) -> None:
+        """Remove a wall in the direction given as a parameter.
+
+        Args:
+            x: column.
+            y: row.
+            direction: the direction that we want if there is a wall on it or no.
+        """
+        self.grid[y][x] &= ~direction
+        direction = OPPOSITE[direction]
+        dx, dy = DIRECTIONS[direction]
+        self.grid[y + dy][x + dx] &= ~direction
