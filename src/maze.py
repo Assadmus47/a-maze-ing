@@ -1,3 +1,6 @@
+
+import random
+
 NORTH = 1
 EAST  = 2
 SOUTH = 4
@@ -58,6 +61,15 @@ class Maze:
             direction: the direction that we want if there is a wall on it or no.
         """
         self.grid[y][x] &= ~direction
-        direction = OPPOSITE[direction]
         dx, dy = DIRECTIONS[direction]
+        direction = OPPOSITE[direction]
         self.grid[y + dy][x + dx] &= ~direction
+
+    def generate(self, seed: int) -> None:
+        random.seed(seed)
+
+        stack = []
+        visited = set()
+
+        visited.add((0, 0))
+        stack.append((0, 0))
