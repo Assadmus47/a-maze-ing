@@ -10,6 +10,7 @@ def test():
     maze = Maze(20, 15)
     maze.place_42_pattern()
     maze.generate(99, True)
+    maze.place_42_pattern()
     for i in range (15):
         for j in range(20):
             if maze.grid[i][j] == 15:
@@ -24,4 +25,5 @@ def test():
 
 if __name__ == "__main__":
     test()
+
 
