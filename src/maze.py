@@ -35,6 +35,7 @@ class Maze:
             width: The number of cells horizontally.
             height: The number of cells vertically.
         """
+        self.visited = set()
         self.width: int = width
         self.height: int = height
         self.grid: list[list[int]] = [[0xF for _ in range(width)] for _ in range(height)]
@@ -65,12 +66,12 @@ class Maze:
         direction = OPPOSITE[direction]
         self.grid[y + dy][x + dx] &= ~direction
     
-    def is_valide_neighor(self, x, y, direction, visited):
+    def is_valide_neighor(self, x, y, direction):
         dx, dy = DIRECTIONS[direction]
         x += dx
         y += dy
 
-        if (x, y) in visited:
+        if (x, y) in self.visited:
             return False
 
         
@@ -86,9 +87,8 @@ class Maze:
         random.seed(seed)
 
         stack = []
-        visited = set()
 
-        visited.add((0, 0))
+        self.visited.add((0, 0))
         stack.append((0, 0))
 
         while stack:
@@ -98,7 +98,7 @@ class Maze:
 
             for i in range(4):
                 direction = 1 << i
-                if self.is_valide_neighor(x, y, direction, visited):
+                if self.is_valide_neighor(x, y, direction):
                     valide_neighor.append(direction)
 
             if not valide_neighor:
@@ -108,7 +108,7 @@ class Maze:
                 direction = random.choice(valide_neighor)
                 self.remove_wall(x, y, direction)
                 dx , dy = DIRECTIONS[direction]
-                visited.add((x + dx, y + dy))
+                self.visited.add((x + dx, y + dy))
                 stack.append((x + dx, y + dy))
 
         if perfect is False:
@@ -129,3 +129,24 @@ class Maze:
 
                         self.remove_wall(x, y, direction)
 
+
+    def place_42_pattern(self) -> None:
+        centre_x = self.width // 2
+        centre_y = self.height // 2
+
+        start_x = centre_x - 3
+        start_y = centre_y - 2
+        
+        pattern = [
+            (0,0), (2,0), (4,0), (5,0), (6,0),
+            (0,1), (2,1), (6,1),
+            (0,2), (1,2), (2,2), (4,2), (5,2), (6,2),
+            (2,3), (4,3),
+            (2,4), (4,4), (5,4), (6,4)
+        ]
+        
+        for y in range(start_y, start_y + 5):
+            for x in range(start_x, start_x + 7):
+                if (x - start_x, y - start_y) in pattern:
+                    self.visited.add((x, y))
+                    self.grid[y][x] = 15

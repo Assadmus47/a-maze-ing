@@ -221,3 +221,9 @@ len(visited)
 # condition pour pattern
 WIDTH < 9   (7 pour le pattern + 1 marge de chaque côté)
 HEIGHT < 7  (5 pour le pattern + 1 marge en haut et en bas)
+
+█░█░███
+█░█░░░█
+███░███
+░░█░█░░
+░░█░███
