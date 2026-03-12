@@ -9,20 +9,16 @@ from src.maze import Maze
 def test():
     maze = Maze(20, 15)
     maze.generate(99, True)
+    maze.place_42_pattern()
     for i in range (15):
         for j in range(20):
             print(maze.grid[i][j], end="")
         print()
-    maze1 = Maze(20, 15)
-    print()
-    maze1.generate(99, False)
-    for i in range (15):
-        for j in range(20):
-            print(maze1.grid[i][j], end="")
-        print()
+
 
     
 
 
 if __name__ == "__main__":
     test()
+
