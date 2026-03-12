@@ -64,8 +64,25 @@ class Maze:
         dx, dy = DIRECTIONS[direction]
         direction = OPPOSITE[direction]
         self.grid[y + dy][x + dx] &= ~direction
+    
+    def is_valide_neighor(self, x, y, direction, visited):
+        dx, dy = DIRECTIONS[direction]
+        x += dx
+        y += dy
 
-    def generate(self, seed: int) -> None:
+        if (x, y) in visited:
+            return False
+
+        
+        if self.width - 1 < x or x < 0:
+            return False
+
+        if self.height - 1 < y or y < 0:
+            return False
+
+        return True
+
+    def generate(self, seed: int, perfect: bool = True) -> None:
         random.seed(seed)
 
         stack = []
@@ -73,3 +90,42 @@ class Maze:
 
         visited.add((0, 0))
         stack.append((0, 0))
+
+        while stack:
+            x, y = stack[-1]
+
+            valide_neighor = []
+
+            for i in range(4):
+                direction = 1 << i
+                if self.is_valide_neighor(x, y, direction, visited):
+                    valide_neighor.append(direction)
+
+            if not valide_neighor:
+                x, y = stack.pop()
+
+            else:
+                direction = random.choice(valide_neighor)
+                self.remove_wall(x, y, direction)
+                dx , dy = DIRECTIONS[direction]
+                visited.add((x + dx, y + dy))
+                stack.append((x + dx, y + dy))
+
+        if perfect is False:
+            for y in range (self.height):
+                for x in range(self.width):
+                    if random.random() < 0.2:
+                        direction = random.choice([NORTH, EAST, SOUTH, WEST])
+
+                        dx, dy = DIRECTIONS[direction]
+                        x1 = x + dx
+                        y1 = y + dy
+
+                        if self.width - 1 < x1 or x1 < 0:
+                            continue
+
+                        if self.height - 1 < y1 or y1 < 0:
+                            continue
+
+                        self.remove_wall(x, y, direction)
+

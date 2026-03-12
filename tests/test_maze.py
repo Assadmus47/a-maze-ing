@@ -7,14 +7,20 @@ from src.maze import Maze
 
 
 def test():
-    maze = Maze(5, 3)
-    for i in range (3):
-        for j in range(5):
+    maze = Maze(20, 15)
+    maze.generate(99, True)
+    for i in range (15):
+        for j in range(20):
             print(maze.grid[i][j], end="")
         print()
-    maze.remove_wall(1,1, WEST)
-    print(maze.has_wall(1,1, WEST))
-    print(maze.has_wall(0,1, EAST))
+    maze1 = Maze(20, 15)
+    print()
+    maze1.generate(99, False)
+    for i in range (15):
+        for j in range(20):
+            print(maze1.grid[i][j], end="")
+        print()
+
     
 
 
