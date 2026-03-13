@@ -12,7 +12,6 @@ GREEN   = "\033[32m"
 MAGENTA = "\033[95m"
 
 
-
 def display_wall(maze, wall, x, y, end):
     if (x, y) in maze.forty_two:
         print(CYAN + wall + RESET, end=end)
