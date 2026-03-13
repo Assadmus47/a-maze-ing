@@ -12,7 +12,7 @@ def test():
     maze.entree = (0,0)
     maze.sortie = (19,14)
     maze.place_42_pattern()
-    maze.generate(3)
+    maze.generate(8)
     draw(maze)
 
 

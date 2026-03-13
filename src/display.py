@@ -19,7 +19,7 @@ def display_wall(maze, wall, x, y, end):
         print(YELLOW + wall + RESET, end=end)
 
 
-def draw(maze):
+def draw(maze) -> None:
     
     for y in range (maze.height):
         for x in range(maze.width):

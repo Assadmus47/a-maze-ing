@@ -154,3 +154,4 @@ class Maze:
                     self.visited.add((x, y))
                     self.forty_two.add((x, y))
                     self.grid[y][x] = 15
+
