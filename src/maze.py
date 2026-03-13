@@ -37,8 +37,8 @@ class Maze:
         """
         self.entree: tuple[int, int] = (0, 0)
         self.sortie: tuple[int, int] = (0, 0)
-        self.visited = set()
         self.forty_two = set()
+        self.visited = set()
         self.width: int = width
         self.height: int = height
         self.grid: list[list[int]] = [[0xF for _ in range(width)] for _ in range(height)]
