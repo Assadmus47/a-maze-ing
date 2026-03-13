@@ -74,7 +74,7 @@ colors = [
 
 RESET = "\033[0m"
 
-def menu(maze, seed) -> None:
+def menu(maze) -> None:
     choice: int = 0
     color_choice: int = 0
     while(choice != 4):
@@ -93,6 +93,7 @@ def menu(maze, seed) -> None:
                 print("please enter a choice between 1 and 4")
                 continue
         except ValueError as e:
+            print()
             print("error:", e)
             continue
 
@@ -112,13 +113,13 @@ def menu(maze, seed) -> None:
             print("close")
             return
 
-def main():
+def main() -> None:
     maze = Maze(20, 15)
     maze.entree = (0,0)
     maze.sortie = (19,14)
     maze.place_42_pattern()
-    maze.generate(8)
-    menu(maze, 42)
+    maze.generate(42)
+    menu(maze)
 
 
 if __name__ == "__main__":
