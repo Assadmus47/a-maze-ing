@@ -35,7 +35,10 @@ class Maze:
             width: The number of cells horizontally.
             height: The number of cells vertically.
         """
+        self.entree: tuple[int, int] = (0, 0)
+        self.sortie: tuple[int, int] = (0, 0)
         self.visited = set()
+        self.forty_two = set()
         self.width: int = width
         self.height: int = height
         self.grid: list[list[int]] = [[0xF for _ in range(width)] for _ in range(height)]
@@ -149,4 +152,5 @@ class Maze:
             for x in range(start_x, start_x + 7):
                 if (x - start_x, y - start_y) in pattern:
                     self.visited.add((x, y))
+                    self.forty_two.add((x, y))
                     self.grid[y][x] = 15

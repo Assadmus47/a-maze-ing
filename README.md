@@ -227,3 +227,6 @@ HEIGHT < 7  (5 pour le pattern + 1 marge en haut et en bas)
 ███░███
 ░░█░█░░
 ░░█░███
+
+WIDTH  = nombre de colonnes  (horizontal, gauche → droite)
+HEIGHT = nombre de lignes    (vertical, haut → bas)
