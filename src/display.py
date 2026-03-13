@@ -9,6 +9,8 @@ RESET = "\033[0m"
 YELLOW = "\033[33m"
 RED = "\033[31m"
 GREEN   = "\033[32m"
+MAGENTA = "\033[95m"
+
 
 
 def display_wall(maze, wall, x, y, end):
@@ -36,7 +38,7 @@ def draw(maze):
                     if (x, y) in maze.forty_two:
                         print(CYAN + "█████" + RESET, end="")
                     elif (x, y) == maze.entree:
-                        print(YELLOW + "█" + GREEN + "████" + RESET, end="")
+                        print(YELLOW + "█" + MAGENTA + "████" + RESET, end="")
                     else:
                         print(YELLOW + "█    " + RESET, end="")
                 else:
