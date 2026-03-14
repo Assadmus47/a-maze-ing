@@ -21,8 +21,7 @@ def draw(maze, color) -> None:
             else:
                 print(color[1] + "▓    " + RESET, end="")
 
-        display_wall(maze, "▓", x, y, "\n", color)
-        
+        display_wall(maze, "▓", x, y, "\n", color)        
 
         for _ in range(2):
             for x in range(maze.width):
