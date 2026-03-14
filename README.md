@@ -161,3 +161,72 @@ Output écrit les chiffres en hex dans maze.txt
 ---
 
 C'est plus clair maintenant ? Tu veux qu'on aille plus loin sur les bits ou tu veux qu'on passe à comment coder la classe `Maze` ? 🎯
+
+## BFS Maze.generate:
+
+random.seed(seed)
+stack = []
+visited = set()
+visited.add((0,0))
+stack.append((0,0))
+
+while stack:                              ← début boucle
+    regarder cellule en haut de stack
+    trouver voisins valides non visités
+    choisir un voisin au hasard
+    casser le mur
+    marquer visité + push dans stack
+    si pas de voisin → pop             ← fin boucle
+
+nb voisin valide:
+1. Il est dans les limites de la grille
+2. Il n'est pas dans visited
+
+---
+
+# Stack en python:
+
+## créer
+stack = []
+
+## push (ajouter en haut)
+stack.append(element)
+
+## pop (enlever le dernier)
+stack.pop()
+
+## regarder le dernier sans l'enlever
+stack[-1]
+
+## vérifier si vide
+len(stack) == 0
+
+---
+
+# set en Python:
+
+## créer
+visited = set()
+
+## ajouter
+visited.add((1, 0))
+
+## vérifier si dedans
+(1, 0) in visited   # True
+(2, 0) in visited   # False
+
+## taille
+len(visited)
+
+# condition pour pattern
+WIDTH < 9   (7 pour le pattern + 1 marge de chaque côté)
+HEIGHT < 7  (5 pour le pattern + 1 marge en haut et en bas)
+
+█░█░███
+█░█░░░█
+███░███
+░░█░█░░
+░░█░███
+
+WIDTH  = nombre de colonnes  (horizontal, gauche → droite)
+HEIGHT = nombre de lignes    (vertical, haut → bas)
