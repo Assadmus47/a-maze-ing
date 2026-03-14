@@ -59,12 +59,6 @@ colors = [
         "\033[34m"   # DARK BLUE
     ],
     [  # Palette 10
-        "\033[32m",  # DARK GREEN
-        "\033[92m",  # GREEN
-        "\033[97m",  # WHITE
-        "\033[93m"   # LIGHT YELLOW
-    ],
-    [  # Palette gris + jaune + cyan
         "\033[33m",  # YELLOW
         "\033[90m",  # DARK GRAY
         "\033[36m",  # CYAN
@@ -108,7 +102,7 @@ def menu(maze: Maze) -> None:
             print("chemin est afficher")
         elif choice == 3:
             color_choice += 1
-            if color_choice == 11:
+            if color_choice == 10:
                 color_choice = 0
         elif choice == 4:
             print("close")
