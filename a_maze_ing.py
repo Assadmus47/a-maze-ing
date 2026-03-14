@@ -1,6 +1,6 @@
 
-from src.maze import Maze
-from src.display import draw
+from src import Maze, draw
+
 import random
 
 colors = [
@@ -65,19 +65,20 @@ colors = [
         "\033[93m"   # LIGHT YELLOW
     ],
     [  # Palette gris + jaune + cyan
-    "\033[33m",  # YELLOW
-    "\033[90m",  # DARK GRAY
-    "\033[36m",  # CYAN
-    "\033[97m"   # WHITE
+        "\033[33m",  # YELLOW
+        "\033[90m",  # DARK GRAY
+        "\033[36m",  # CYAN
+        "\033[97m"   # WHITE
     ]
 ]
 
 RESET = "\033[0m"
 
-def menu(maze) -> None:
+
+def menu(maze: Maze) -> None:
     choice: int = 0
     color_choice: int = 0
-    while(choice != 4):
+    while (choice != 4):
         try:
             draw(maze, colors[color_choice])
             print()
@@ -99,8 +100,8 @@ def menu(maze) -> None:
 
         if choice == 1:
             maze = Maze(20, 15)
-            maze.entree = (random.randint(0, 19),random.randint(0, 14))
-            maze.sortie = (random.randint(0, 19),random.randint(0, 14))
+            maze.entree = (random.randint(0, 19), random.randint(0, 14))
+            maze.sortie = (random.randint(0, 19), random.randint(0, 14))
             maze.place_42_pattern()
             maze.generate(random.randint(0, 99999))
         elif choice == 2:
@@ -113,10 +114,11 @@ def menu(maze) -> None:
             print("close")
             return
 
+
 def main() -> None:
     maze = Maze(20, 15)
-    maze.entree = (0,0)
-    maze.sortie = (19,14)
+    maze.entree = (0, 0)
+    maze.sortie = (19, 14)
     maze.place_42_pattern()
     maze.generate(42)
     menu(maze)
