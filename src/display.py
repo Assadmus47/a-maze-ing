@@ -38,6 +38,8 @@ def draw(maze) -> None:
                         print(CYAN + "▓▓▓▓▓" + RESET, end="")
                     elif (x, y) == maze.entree:
                         print(YELLOW + "▓" + MAGENTA + "████" + RESET, end="")
+                    elif hasattr(maze, "path") and (x, y) in maze.path:
+                        print(YELLOW + " " + GREEN + "████" + RESET, end="")
                     elif (x, y) == maze.sortie:
                         print(YELLOW + "▓" + RED + "████" + RESET, end="")
                     else:

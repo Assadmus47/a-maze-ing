@@ -1,10 +1,12 @@
 
 from src.maze import Maze
 from src.display import draw
+from src.solver import solve
 import random
 
 def menu(maze, seed) -> None:
     choice: int = 0
+    path = None
     while(choice != 4):
         try:
             draw(maze)
@@ -13,7 +15,7 @@ def menu(maze, seed) -> None:
             print("=== A-Maze-ing ===")
             print("1. Re-generate a new maze")
             print("2. Show/hide path from entry to exit")
-            print("4. Rotate maze colors")
+            print("3. Rotate maze colors")
             print("4. Quit")
             choice = int(input("Choice? (1-4): "))
             print()
@@ -30,7 +32,7 @@ def menu(maze, seed) -> None:
             maze.place_42_pattern()
             maze.generate(random.randint(0, 99999))
         elif choice == 2:
-            print("chemin est afficher")
+            maze.path = solve(maze)
         elif choice == 3:
             print("color changed")
         elif choice == 4:

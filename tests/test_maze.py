@@ -5,7 +5,7 @@ WEST  = 8
 
 from src.maze import Maze
 from src.display import draw
-
+from src.solver import solve
 
 def test():
     maze = Maze(20, 15)
@@ -15,6 +15,12 @@ def test():
     maze.generate(8)
     draw(maze)
 
+    path = solve(maze)
+    print("entrée:", maze.entree)
+    print("sortie:", maze.sortie)
+    print("Chemin trouvé :")
+    print(path)
+    print(len(path))
 
 if __name__ == "__main__":
     test()
