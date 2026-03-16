@@ -1,4 +1,4 @@
-
+from collections import deque
 import random
 
 NORTH = 1
@@ -87,6 +87,13 @@ class Maze:
         return True
 
     def generate(self, seed: int, perfect: bool = True) -> None:
+        self.visited = set()
+
+        self.grid = [
+            [0xF for _ in range(self.width)]
+            for _ in range(self.height)
+        ]
+
         random.seed(seed)
 
         stack = []
@@ -155,3 +162,48 @@ class Maze:
                     self.forty_two.add((x, y))
                     self.grid[y][x] = 15
 
+    def solve(self):
+        start = self.entree
+        goal = self.sortie
+
+        queue = deque([start])
+        visited = {start}
+        came_from = {}
+
+        while queue:
+
+            x, y = queue.popleft()
+
+            if (x, y) == goal:
+                break
+
+            for direction, (dx, dy) in DIRECTIONS.items():
+
+                if self.has_wall(x, y, direction):
+                    continue
+
+                nx = x + dx
+                ny = y + dy
+
+                if (nx, ny) in visited:
+                    continue
+
+                visited.add((nx, ny))
+                came_from[(nx, ny)] = (x, y)
+                queue.append((nx, ny))
+
+        path = [goal]
+
+        if goal not in came_from:
+            self.path = []
+            return
+        
+        current = goal
+
+        while current != start:
+            current = came_from[current]
+            path.append(current)
+
+        path.reverse()
+
+        self.path = path

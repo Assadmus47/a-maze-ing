@@ -1,7 +1,6 @@
 
 from src.maze import Maze
 from src.display import draw
-from src.solver import solve
 import random
 
 def menu(maze, seed) -> None:
@@ -32,7 +31,8 @@ def menu(maze, seed) -> None:
             maze.place_42_pattern()
             maze.generate(random.randint(0, 99999))
         elif choice == 2:
-            maze.path = solve(maze)
+            maze.solve()
+            input("appuie sur entree pour afficher le chemin")
         elif choice == 3:
             print("color changed")
         elif choice == 4:
