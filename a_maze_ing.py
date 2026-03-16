@@ -1,7 +1,9 @@
 
 from src.maze import Maze
 from src.display import draw
+from src.config_parser import load_config
 import random
+import sys
 
 def menu(maze, seed) -> None:
     choice: int = 0
@@ -40,12 +42,23 @@ def menu(maze, seed) -> None:
             return
 
 def main():
-    maze = Maze(20, 15)
-    maze.entree = (0,0)
-    maze.sortie = (19,14)
+    if len(sys.argv) != 2:
+        print("Usage: python3 a_maze_ing.py config.txt")
+        return
+
+    config_file = sys.argv[1]
+
+    config = load_config(config_file)
+
+    maze = Maze(config["width"], config["height"])
+
+    maze.entree = config["entry"]
+    maze.sortie = config["exit"]
+
     maze.place_42_pattern()
-    maze.generate(8)
-    menu(maze, 42)
+    maze.generate(config["seed"], config["perfect"])
+
+    menu(maze, config["seed"])
 
 
 if __name__ == "__main__":
