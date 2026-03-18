@@ -39,6 +39,7 @@ class Maze:
         """
         self.entree: tuple[int, int] = (0, 0)
         self.sortie: tuple[int, int] = (0, 0)
+        self.path: set[tuple[int, int]] = set()
         self.forty_two: set[tuple[int, int]] = set()
         self.visited: set[tuple[int, int]] = set()
         self.width: int = width
@@ -206,18 +207,15 @@ class Maze:
                 came_from[(nx, ny)] = (x, y)
                 queue.append((nx, ny))
 
-        path = [goal]
-
         if goal not in came_from:
-            self.path = []
+            self.path = set()
             return
-        
+
+        path = [goal]
         current = goal
 
         while current != start:
             current = came_from[current]
             path.append(current)
 
-        path.reverse()
-
-        self.path = path
+        self.path = set(path)
