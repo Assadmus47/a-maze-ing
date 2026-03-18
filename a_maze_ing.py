@@ -143,6 +143,10 @@ def main() -> None:
     # maze.entree = (0, 0)
     # maze.sortie = (19, 14)
     
+    if config["width"] < 9 or config["height"] < 7:
+        print("Error: maze must be at least 9x7")
+        return
+    
     maze = Maze(config["width"], config["height"])
     maze.entree = config["entry"]
     maze.sortie = config["exit"]
