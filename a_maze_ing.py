@@ -108,11 +108,10 @@ def menu(maze: Maze, config) -> None:
             continue
 
         if choice == 1:
-            #maze = Maze(20, 15)
-
             maze = Maze(config["width"], config["height"])
-            maze.entree = (random.randint(0, config["width"] - 1), random.randint(0, config["height"] - 1))
-            maze.sortie = (random.randint(0, config["width"] - 1), random.randint(0, config["height"] - 1))
+
+            maze.entree = config["entry"]
+            maze.sortie = config["exit"]
 
             maze.place_42_pattern()
             maze.generate(random.randint(0, 99999), config["perfect"])
@@ -139,10 +138,6 @@ def main() -> None:
     config_file = sys.argv[1]
     config = load_config(config_file)
 
-    # maze = Maze(20, 15)
-    # maze.entree = (0, 0)
-    # maze.sortie = (19, 14)
-    
     if config["width"] < 9 or config["height"] < 7:
         print("Error: maze must be at least 9x7")
         return
