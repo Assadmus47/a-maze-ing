@@ -1,59 +1,102 @@
+from .maze import Maze
 
 NORTH = 1
-EAST  = 2
+EAST = 2
 SOUTH = 4
-WEST  = 8
-
-CYAN = "\033[36m"
+WEST = 8
 RESET = "\033[0m"
-YELLOW = "\033[33m"
-RED = "\033[31m"
-GREEN   = "\033[32m"
-MAGENTA = "\033[95m"
+
+DIRECTIONS = {
+    NORTH: (0, -1),
+    SOUTH: (0, 1),
+    EAST: (1, 0),
+    WEST: (-1, 0),
+}
 
 
-def display_wall(maze, wall, x, y, end):
+def display_wall(
+        maze: Maze, wall: str, x: int, y: int, end: str, color: list[str]
+) -> None:
     if (x, y) in maze.forty_two:
-        print(CYAN + wall + RESET, end=end)
+        print(color[0] + wall + RESET, end=end)
     else:
-        print(YELLOW + wall + RESET, end=end)
+        print(color[1] + wall + RESET, end=end)
 
 
-def draw(maze) -> None:
-    
-    for y in range (maze.height):
+def draw(maze: Maze, color: list[str], flage: bool = False) -> None:
+    for y in range(maze.height):
         for x in range(maze.width):
             if maze.has_wall(x, y, NORTH):
-                display_wall(maze, "▓▓▓▓▓", x ,y, "")
+                display_wall(maze, "▓▓▓▓▓", x, y, "", color)
+            elif (x, y) in maze.path and flage:
+                if (x, y - 1) in maze.path:
+                    print(
+                        color[1] + "▓" + color[4] + "████" + RESET,
+                        end=""
+                    )
+                else:
+                    print(
+                        color[1] + "▓" + color[4] + "    " + RESET,
+                        end=""
+                    )
             else:
-                print(YELLOW + "▓    " + RESET, end="")
+                print(color[1] + "▓    " + RESET, end="")
 
-        display_wall(maze, "▓", x, y, "\n")
-        
+        display_wall(maze, "▓", x, y, "\n", color)
 
         for _ in range(2):
             for x in range(maze.width):
                 if maze.has_wall(x, y, WEST):
                     if (x, y) in maze.forty_two:
-                        print(CYAN + "▓▓▓▓▓" + RESET, end="")
+                        print(color[0] + "▓▓▓▓▓" + RESET, end="")
                     elif (x, y) == maze.entree:
-                        print(YELLOW + "▓" + MAGENTA + "████" + RESET, end="")
-                    elif hasattr(maze, "path") and (x, y) in maze.path:
-                        print(YELLOW + " " + GREEN + "████" + RESET, end="")
+                        print(
+                            color[1] + "▓" + color[3] + "████" + RESET,
+                            end=""
+                        )
                     elif (x, y) == maze.sortie:
-                        print(YELLOW + "▓" + RED + "████" + RESET, end="")
+                        print(
+                            color[1] + "▓" + color[2] + "████" + RESET,
+                            end=""
+                        )
+                    elif (x, y) in maze.path and flage:
+                        print(
+                            color[1] + "▓" + color[4] + "████" + RESET,
+                            end=""
+                        )
                     else:
-                        print(YELLOW + "▓    " + RESET, end="")
+                        print(color[1] + "▓    " + RESET, end="")
                 else:
                     if (x, y) == maze.entree:
-                        print(" " + MAGENTA + "████" + RESET, end="")
+                        if (x - 1, y) in maze.path and flage:
+                            print(
+                                color[4] + "█" + color[3] + "████" + RESET,
+                                end=""
+                            )
+                        else:
+                            print(" " + color[3] + "████" + RESET, end="")
                     elif (x, y) == maze.sortie:
-                        print(YELLOW + " " + RED + "████" + RESET, end="")
+                        if (x - 1, y) in maze.path and flage:
+                            print(
+                                color[4] + "█" + color[2] + "████" + RESET,
+                                end=""
+                            )
+                        else:
+                            print(
+                                color[1] + " " + color[2] + "████" + RESET,
+                                end=""
+                            )
+                    elif (x, y) in maze.path and flage:
+                        if (x - 1, y) in maze.path:
+                            print(color[4] + "█████" + RESET, end="")
+                        else:
+                            print(color[4] + " ████" + RESET, end="")
                     else:
-                        print(YELLOW + "     " + RESET, end="")
-            display_wall(maze, "▓", x, y, "\n")
+                        print(color[1] + "     " + RESET, end="")
+
+            display_wall(maze, "▓", x, y, "\n", color)
 
     for x in range(maze.width):
-        display_wall(maze, "▓▓▓▓▓", x, y, "")
+        display_wall(maze, "▓▓▓▓▓", x, y, "", color)
 
-    display_wall(maze, "▓", x, y, "\n")
+    display_wall(maze, "▓", x, y, "\n", color)

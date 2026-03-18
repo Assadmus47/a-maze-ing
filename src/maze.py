@@ -1,10 +1,11 @@
 from collections import deque
+
 import random
 
 NORTH = 1
-EAST  = 2
+EAST = 2
 SOUTH = 4
-WEST  = 8
+WEST = 8
 
 OPPOSITE = {
     NORTH: SOUTH,
@@ -19,6 +20,7 @@ DIRECTIONS = {
     EAST: (1, 0),
     WEST: (-1, 0),
 }
+
 
 class Maze:
     """Represents the maze grid.
@@ -37,11 +39,13 @@ class Maze:
         """
         self.entree: tuple[int, int] = (0, 0)
         self.sortie: tuple[int, int] = (0, 0)
-        self.forty_two = set()
-        self.visited = set()
+        self.forty_two: set[tuple[int, int]] = set()
+        self.visited: set[tuple[int, int]] = set()
         self.width: int = width
         self.height: int = height
-        self.grid: list[list[int]] = [[0xF for _ in range(width)] for _ in range(height)]
+        self.grid: list[list[int]] = [
+            [0xF for _ in range(width)] for _ in range(height)
+        ]
 
     def has_wall(self, x: int, y: int, direction: int) -> bool:
         """check if there is a wall in the direction given as a parameter.
@@ -49,7 +53,8 @@ class Maze:
         Args:
             x: column.
             y: row.
-            direction: the direction that we want if there is a wall on it or no.
+            direction: the direction that
+            we want if there is a wall on it or no.
 
         Returns:
             returns bool result True if there is a wall , False if there isnt.
@@ -62,14 +67,23 @@ class Maze:
         Args:
             x: column.
             y: row.
-            direction: the direction that we want if there is a wall on it or no.
+            direction: the direction that
+            we want if there is a wall on it or no.
         """
         self.grid[y][x] &= ~direction
         dx, dy = DIRECTIONS[direction]
         direction = OPPOSITE[direction]
         self.grid[y + dy][x + dx] &= ~direction
-    
-    def is_valide_neighor(self, x, y, direction):
+
+    def is_valide_neighbor(self, x: int, y: int, direction: int) -> bool:
+        """Check if the cell neighbor is valide.
+
+        Args:
+            x: column.
+            y: row.
+            direction: the direction that
+            we want if there is a wall on it or no.
+        """
         dx, dy = DIRECTIONS[direction]
         x += dx
         y += dy
@@ -77,7 +91,6 @@ class Maze:
         if (x, y) in self.visited:
             return False
 
-        
         if self.width - 1 < x or x < 0:
             return False
 
@@ -87,13 +100,12 @@ class Maze:
         return True
 
     def generate(self, seed: int, perfect: bool = True) -> None:
-        self.visited = set()
+        """Generate maze using DFS algorithms.
 
-        self.grid = [
-            [0xF for _ in range(self.width)]
-            for _ in range(self.height)
-        ]
-
+        Args:
+            seed : to adjust random.seed to have stable result
+            perfect : to generate more then path if it wasnt True
+        """
         random.seed(seed)
 
         stack = []
@@ -108,7 +120,7 @@ class Maze:
 
             for i in range(4):
                 direction = 1 << i
-                if self.is_valide_neighor(x, y, direction):
+                if self.is_valide_neighbor(x, y, direction):
                     valide_neighor.append(direction)
 
             if not valide_neighor:
@@ -117,12 +129,12 @@ class Maze:
             else:
                 direction = random.choice(valide_neighor)
                 self.remove_wall(x, y, direction)
-                dx , dy = DIRECTIONS[direction]
+                dx, dy = DIRECTIONS[direction]
                 self.visited.add((x + dx, y + dy))
                 stack.append((x + dx, y + dy))
 
         if perfect is False:
-            for y in range (self.height):
+            for y in range(self.height):
                 for x in range(self.width):
                     if random.random() < 0.2:
                         direction = random.choice([NORTH, EAST, SOUTH, WEST])
@@ -139,22 +151,24 @@ class Maze:
 
                         self.remove_wall(x, y, direction)
 
-
     def place_42_pattern(self) -> None:
+        """Adding cells who are in the centre
+        to forty_two set to create 42
+        """
         centre_x = self.width // 2
         centre_y = self.height // 2
 
         start_x = centre_x - 3
         start_y = centre_y - 2
-        
+
         pattern = [
-            (0,0), (2,0), (4,0), (5,0), (6,0),
-            (0,1), (2,1), (6,1),
-            (0,2), (1,2), (2,2), (4,2), (5,2), (6,2),
-            (2,3), (4,3),
-            (2,4), (4,4), (5,4), (6,4)
+            (0, 0), (2, 0), (4, 0), (5, 0), (6, 0),
+            (0, 1), (2, 1), (6, 1),
+            (0, 2), (1, 2), (2, 2), (4, 2), (5, 2), (6, 2),
+            (2, 3), (4, 3),
+            (2, 4), (4, 4), (5, 4), (6, 4)
         ]
-        
+
         for y in range(start_y, start_y + 5):
             for x in range(start_x, start_x + 7):
                 if (x - start_x, y - start_y) in pattern:
