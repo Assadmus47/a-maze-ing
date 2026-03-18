@@ -1,5 +1,8 @@
 
 from src import Maze, draw
+from src.config_parser import load_config
+
+import sys
 
 import random
 
@@ -79,10 +82,11 @@ colors = [
 RESET = "\033[0m"
 
 
-def menu(maze: Maze) -> None:
+def menu(maze: Maze, config) -> None:
     choice: int = 0
     color_choice: int = 0
     flage: bool = False
+
     while (choice != 4):
         try:
             draw(maze, colors[color_choice], flage)
@@ -104,11 +108,14 @@ def menu(maze: Maze) -> None:
             continue
 
         if choice == 1:
-            maze = Maze(20, 15)
-            maze.entree = (random.randint(0, 19), random.randint(0, 14))
-            maze.sortie = (random.randint(0, 19), random.randint(0, 14))
+            #maze = Maze(20, 15)
+
+            maze = Maze(config["width"], config["height"])
+            maze.entree = (random.randint(0, config["width"] - 1), random.randint(0, config["height"] - 1))
+            maze.sortie = (random.randint(0, config["width"] - 1), random.randint(0, config["height"] - 1))
+
             maze.place_42_pattern()
-            maze.generate(random.randint(0, 99999))
+            maze.generate(random.randint(0, 99999), config["perfect"])
             maze.solve()
         elif choice == 2:
             if flage == True:
@@ -125,13 +132,25 @@ def menu(maze: Maze) -> None:
 
 
 def main() -> None:
-    maze = Maze(20, 15)
-    maze.entree = (0, 0)
-    maze.sortie = (19, 14)
+    if len(sys.argv) != 2:
+        print("Usage: python3 a_maze_ing.py config.txt")
+        return
+
+    config_file = sys.argv[1]
+    config = load_config(config_file)
+
+    # maze = Maze(20, 15)
+    # maze.entree = (0, 0)
+    # maze.sortie = (19, 14)
+    
+    maze = Maze(config["width"], config["height"])
+    maze.entree = config["entry"]
+    maze.sortie = config["exit"]
+    
     maze.place_42_pattern()
-    maze.generate(42)
+    maze.generate(config["seed"], config["perfect"])
     maze.solve()
-    menu(maze)
+    menu(maze, config)
 
 
 if __name__ == "__main__":
