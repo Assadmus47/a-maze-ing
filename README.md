@@ -240,6 +240,233 @@ python3 -m build
 
 ---
 
+---
+
+## BFS (Shortest Path Algorithm)
+
+To find the shortest path between the entry and the exit, the project uses the **Breadth-First Search (BFS)** algorithm.
+
+**Why BFS?**
+
+* Explores the maze level by level
+* Guarantees the **shortest path**
+* Deterministic and easy to reconstruct the solution
+
+---
+
+### How it works
+
+1. Start from the entry cell
+2. Explore all accessible neighbors
+3. Store visited cells to avoid loops
+4. Keep track of where each cell comes from
+5. Stop when reaching the exit
+6. Reconstruct the path from exit to entry
+
+---
+
+### Data structures used
+
+```python
+queue = deque([start])
+visited = {start}
+came_from = {}
+```
+
+* `queue` → BFS exploration
+* `visited` → prevents revisiting cells
+* `came_from` → used to rebuild the path
+
+---
+
+### Path reconstruction
+
+```python
+current = goal
+
+while current != start:
+    current = came_from[current]
+    path.append(current)
+
+path.reverse()
+```
+
+---
+
+### Important design choice
+
+The path is stored in two formats:
+
+```python
+self.path_list = path   # ordered (for output)
+self.path = set(path)   # fast lookup (for display)
+```
+
+* **list** → preserves order (needed for directions)
+* **set** → fast membership check in display
+
+---
+
+## Config Parser
+
+The program reads a configuration file (`config.txt`) containing key-value pairs.
+
+---
+
+### Parsing logic
+
+```text
+open file
+↓
+read line by line
+↓
+ignore comments
+↓
+split with "="
+↓
+store in dictionary
+```
+
+---
+
+### Validation rules
+
+* Required keys must exist:
+
+  * WIDTH, HEIGHT, ENTRY, EXIT, OUTPUT_FILE, PERFECT
+* WIDTH and HEIGHT must be positive integers
+* ENTRY and EXIT must be inside the grid
+* ENTRY ≠ EXIT
+* PERFECT must be True or False
+* SEED must be an integer (if present)
+
+---
+
+### Error handling
+
+The parser is designed to **never crash**:
+
+Examples:
+
+```text
+WIDTH=abc → error handled
+ENTRY=100,100 → out of bounds
+invalid line → detected
+```
+
+Using:
+
+```python
+try:
+    ...
+except:
+    ...
+```
+
+---
+
+## Output File Generation
+
+The program writes the maze to a file in a strict format required by the subject.
+
+---
+
+### Structure
+
+```text
+HEX GRID
+
+ENTRY
+EXIT
+PATH
+```
+
+---
+
+### Example
+
+```text
+D391793953
+BAE852C47A
+...
+
+0,0
+9,7
+ESSSSSEESSEEEEEE
+```
+
+---
+
+### Grid encoding
+
+Each cell is converted to hexadecimal:
+
+```python
+format(cell, "X")
+```
+
+---
+
+### Path conversion
+
+From coordinates:
+
+```python
+[(0,0),(1,0),(1,1)]
+```
+
+To directions:
+
+```text
+E S
+```
+
+---
+
+### Direction logic
+
+```python
+dx = x2 - x1
+dy = y2 - y1
+```
+
+* `dx = 1` → E
+* `dx = -1` → W
+* `dy = 1` → S
+* `dy = -1` → N
+
+---
+
+## Program Flow
+
+```text
+config.txt
+↓
+parsing
+↓
+maze generation (DFS)
+↓
+path solving (BFS)
+↓
+output file generation
+↓
+display
+```
+
+---
+
+## Important Behavior
+
+Each time a new maze is generated:
+
+```text
+generate → solve → write_output
+```
+
+The output file is always updated accordingly.
+
+---
+
 ## Resources
 
 - [Maze generation algorithms — Wikipedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
