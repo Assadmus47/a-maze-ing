@@ -44,6 +44,7 @@ class Maze:
         self.visited: set[tuple[int, int]] = set()
         self.width: int = width
         self.height: int = height
+        self.path_list = []
         self.grid: list[list[int]] = [
             [0xF for _ in range(width)] for _ in range(height)
         ]
