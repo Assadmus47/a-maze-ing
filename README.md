@@ -1,4 +1,4 @@
-OK on repart de zéro, oublie tout le code pour l'instant. 😄
+*This project has been created as part of the 42 curriculum by elbarry and mkacemi*
 
 ---
 
