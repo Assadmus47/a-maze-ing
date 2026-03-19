@@ -230,3 +230,256 @@ HEIGHT < 7  (5 pour le pattern + 1 marge en haut et en bas)
 
 WIDTH  = nombre de colonnes  (horizontal, gauche → droite)
 HEIGHT = nombre de lignes    (vertical, haut → bas)
+
+---
+
+## BFS (trouver le plus court chemin)
+
+Maintenant que le labyrinthe est généré, il faut trouver le chemin entre l’entrée et la sortie.
+
+On utilise **BFS (Breadth-First Search)**.
+
+Contrairement au DFS :
+
+* DFS explore en profondeur
+* BFS explore **niveau par niveau**
+
+👉 Donc BFS trouve **le chemin le plus court**
+
+---
+
+### Principe
+
+```text
+partir de l'entrée
+↓
+explorer tous les voisins accessibles
+↓
+continuer en largeur
+↓
+atteindre la sortie
+↓
+reconstruire le chemin
+```
+
+---
+
+### Structure utilisée
+
+```python
+queue = deque([start])
+visited = {start}
+came_from = {}
+```
+
+* `queue` → cellules à explorer
+* `visited` → éviter les doublons
+* `came_from` → permet de reconstruire le chemin
+
+---
+
+### Reconstruction du chemin
+
+On part de la sortie et on remonte :
+
+```python
+current = goal
+
+while current != start:
+    current = came_from[current]
+    path.append(current)
+```
+
+Puis on inverse :
+
+```python
+path.reverse()
+```
+
+---
+
+### Important
+
+Le chemin est stocké sous deux formes :
+
+```python
+self.path_list = path   # ordre du chemin
+self.path = set(path)   # affichage rapide
+```
+
+👉 La liste est nécessaire pour garder l’ordre
+👉 Le set est utilisé pour le display
+
+---
+
+## Parsing (lecture du config.txt)
+
+Le programme lit un fichier :
+
+```text
+WIDTH=10
+HEIGHT=8
+ENTRY=0,0
+EXIT=9,7
+PERFECT=True
+SEED=8
+```
+
+---
+
+### Étapes
+
+```text
+ouvrir le fichier
+↓
+lire ligne par ligne
+↓
+split avec "="
+↓
+stocker dans un dictionnaire
+```
+
+---
+
+### Validation
+
+On vérifie :
+
+* WIDTH et HEIGHT présents
+* ENTRY et EXIT présents
+* PERFECT présent
+* types corrects (int, bool)
+* coordonnées dans la grille
+* ENTRY ≠ EXIT
+
+---
+
+### Gestion d’erreurs
+
+Le programme ne crash pas :
+
+```text
+WIDTH=abc → erreur
+ENTRY=100,100 → hors limites
+ligne sans "=" → erreur
+```
+
+On utilise :
+
+```python
+try:
+    ...
+except:
+    ...
+```
+
+---
+
+## Output file (écriture du résultat)
+
+Le programme génère un fichier :
+
+```text
+HEX GRID
+
+ENTRY
+EXIT
+PATH
+```
+
+---
+
+### Exemple
+
+```text
+D391793953
+BAE852C47A
+AAFAFAFFFA
+...
+
+0,0
+9,7
+ESSSSSEESSEEEEEE
+```
+
+---
+
+### Écriture de la grille
+
+Chaque cellule est convertie en hex :
+
+```python
+format(cell, "X")
+```
+
+---
+
+### Conversion du chemin
+
+Le chemin BFS :
+
+```python
+[(0,0),(1,0),(1,1)]
+```
+
+devient :
+
+```text
+E S
+```
+
+---
+
+### Logique
+
+```python
+dx = x2 - x1
+dy = y2 - y1
+```
+
+* `dx = 1` → E
+* `dx = -1` → W
+* `dy = 1` → S
+* `dy = -1` → N
+
+---
+
+## Organisation finale du programme
+
+```text
+config.txt
+↓
+parsing
+↓
+generate (DFS)
+↓
+solve (BFS)
+↓
+write_output
+↓
+display
+```
+
+---
+
+## Important
+
+Chaque fois que le labyrinthe est régénéré :
+
+```text
+generate → solve → write_output
+```
+
+👉 Le fichier output est toujours à jour
+
+---
+
+## Résumé
+
+* DFS → génère le labyrinthe
+* BFS → trouve le plus court chemin
+* parsing → lit et valide les données
+* output → écrit le résultat
+* set + list → performance + ordre
+
+---
