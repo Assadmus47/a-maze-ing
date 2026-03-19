@@ -1,6 +1,7 @@
 
 from src import Maze, draw
 from src.config_parser import load_config
+from src.output_writer import write_output
 
 import sys
 
@@ -123,8 +124,9 @@ def menu(maze: Maze, config) -> None:
             maze.place_42_pattern()
             maze.generate(random.randint(0, 99999), config["perfect"])
             maze.solve()
+            write_output("maze_output.txt", maze)
         elif choice == 2:
-            if flage is True:
+            if flage == True:
                 flage = False
             else:
                 flage = True
@@ -143,20 +145,24 @@ def main() -> None:
         return
 
     config_file = sys.argv[1]
-    config = load_config(config_file)
+    try:
+        config = load_config(config_file)
+    except Exception as e:
+        print("Config error:", e)
+        return
 
     if config["width"] < 9 or config["height"] < 7:
         print("Error: maze must be at least 9x7")
         return
-
+    
     maze = Maze(config["width"], config["height"])
     maze.entree = config["entry"]
     maze.sortie = config["exit"]
-
+    
     maze.place_42_pattern()
     maze.generate(config["seed"], config["perfect"])
-
     maze.solve()
+    write_output(config["output_file"], maze)
     menu(maze, config)
 
 
