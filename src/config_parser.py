@@ -51,6 +51,11 @@ def validate_config(raw: dict) -> dict:
         raise ValueError("SEED must be an integer")
 
     output_file = raw["OUTPUT_FILE"]
+    try:
+        with open(output_file, "w"):
+            pass
+    except Exception:
+        raise ValueError("OUTPUT_FILE is not writable")
 
     return {
         "width": width,
