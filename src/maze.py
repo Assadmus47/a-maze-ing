@@ -1,3 +1,4 @@
+from collections import deque
 
 import random
 
@@ -38,6 +39,7 @@ class Maze:
         """
         self.entree: tuple[int, int] = (0, 0)
         self.sortie: tuple[int, int] = (0, 0)
+        self.path: set[tuple[int, int]] = set()
         self.forty_two: set[tuple[int, int]] = set()
         self.visited: set[tuple[int, int]] = set()
         self.width: int = width
@@ -174,3 +176,46 @@ class Maze:
                     self.visited.add((x, y))
                     self.forty_two.add((x, y))
                     self.grid[y][x] = 15
+
+    def solve(self):
+        start = self.entree
+        goal = self.sortie
+
+        queue = deque([start])
+        visited = {start}
+        came_from = {}
+
+        while queue:
+
+            x, y = queue.popleft()
+
+            if (x, y) == goal:
+                break
+
+            for direction, (dx, dy) in DIRECTIONS.items():
+
+                if self.has_wall(x, y, direction):
+                    continue
+
+                nx = x + dx
+                ny = y + dy
+
+                if (nx, ny) in visited:
+                    continue
+
+                visited.add((nx, ny))
+                came_from[(nx, ny)] = (x, y)
+                queue.append((nx, ny))
+
+        if goal not in came_from:
+            self.path = set()
+            return
+
+        path = [goal]
+        current = goal
+
+        while current != start:
+            current = came_from[current]
+            path.append(current)
+
+        self.path = set(path)
