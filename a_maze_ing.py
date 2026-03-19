@@ -82,7 +82,7 @@ colors = [
 
 RESET = "\033[0m"
 
-#working on it  
+# working on it
 # def check_input(maze, config):
 #     if ((config["entry"] in maze.forty_two) or
 #             (config["exit"] in maze.forty_two)):
@@ -126,7 +126,7 @@ def menu(maze: Maze, config) -> None:
             maze.solve()
             write_output("maze_output.txt", maze)
         elif choice == 2:
-            if flage == True:
+            if flage:
                 flage = False
             else:
                 flage = True
@@ -154,11 +154,11 @@ def main() -> None:
     if config["width"] < 9 or config["height"] < 7:
         print("Error: maze must be at least 9x7")
         return
-    
+
     maze = Maze(config["width"], config["height"])
     maze.entree = config["entry"]
     maze.sortie = config["exit"]
-    
+
     maze.place_42_pattern()
     maze.generate(config["seed"], config["perfect"])
     maze.solve()

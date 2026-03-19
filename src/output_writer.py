@@ -38,5 +38,3 @@ def path_to_directions(path):
             directions.append("N")
 
     return "".join(directions)
-
-
