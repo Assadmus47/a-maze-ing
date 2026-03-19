@@ -81,6 +81,13 @@ colors = [
 
 RESET = "\033[0m"
 
+#working on it  
+# def check_input(maze, config):
+#     if ((config["entry"] in maze.forty_two) or
+#             (config["exit"] in maze.forty_two)):
+#         print("Invalid input: enter differant values of entrey ")
+#         return
+
 
 def menu(maze: Maze, config) -> None:
     choice: int = 0
@@ -148,11 +155,6 @@ def main() -> None:
 
     maze.place_42_pattern()
     maze.generate(config["seed"], config["perfect"])
-
-    if ((config["entry"] in maze.forty_two) or
-            (config["exit"] in maze.forty_two)):
-        print("Invalid input: enter differant values of entrey ")
-        return
 
     maze.solve()
     menu(maze, config)
