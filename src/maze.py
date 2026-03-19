@@ -222,4 +222,7 @@ class Maze:
             current = came_from[current]
             path.append(current)
 
+        path.reverse()
+
+        self.path_list = path
         self.path = set(path)
