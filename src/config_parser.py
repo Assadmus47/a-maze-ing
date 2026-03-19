@@ -8,7 +8,7 @@ def parse_entry(value: str) -> tuple[int, int]:
 
 def validate_config(raw: dict) -> dict:
 
-    required = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "PERFECT"]
+    required = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
 
     for key in required:
         if key not in raw:
@@ -50,7 +50,7 @@ def validate_config(raw: dict) -> dict:
     except ValueError:
         raise ValueError("SEED must be an integer")
 
-    output_file = raw.get("OUTPUT_FILE", "maze_output.txt")
+    output_file = raw["OUTPUT_FILE"]
 
     return {
         "width": width,
