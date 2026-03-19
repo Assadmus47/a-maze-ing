@@ -81,13 +81,15 @@ colors = [
 ]
 
 
-def check_entree_exit(maze: Maze, config: dict):
+def check_entree_exit(maze: Maze, config: dict) -> bool:
     if (config["entry"] in maze.forty_two):
-        print("CHOOSE VALID VALUE OF ENTREE ")
-        return
+        print("CHOOSE VALID VALUE OF ENTREE OUTSIDE OF THE 42 PATTERN")
+        return False
     if (config["exit"] in maze.forty_two):
-        print("CHOOSE VALID VALUE OF EXIT")
-        return
+        print("CHOOSE VALID VALUE OF EXIT OUTSIDE OF THE 42 PATTERN")
+        return False
+
+    return True
 
 
 def menu(maze: Maze, config) -> None:
@@ -161,7 +163,10 @@ def main() -> None:
 
     maze.place_42_pattern()
     maze.generate(config["seed"], config["perfect"])
-    check_entree_exit(maze, config)
+
+    if not check_entree_exit(maze, config):
+        return
+
     maze.solve()
     write_output(config["output_file"], maze)
     menu(maze, config)

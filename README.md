@@ -1,271 +1,270 @@
-*This project has been created as part of the 42 curriculum by mkacemi, elbarry.*
-
-# A-Maze-ing
-
-A maze generator and solver written in Python 3.10+, featuring terminal ASCII rendering, a "42" pattern hidden inside the maze, and an interactive menu.
+*This project has been created as part of the 42 curriculum by elbarry and mkacemi*
 
 ---
 
-## Description
+## C'est quoi un labyrinthe ?
 
-A-Maze-ing generates random mazes from a configuration file and displays them visually in the terminal. Each maze is encoded using a hexadecimal wall representation, can be perfect (single path between entry and exit) or imperfect (multiple paths), and always contains a hidden "42" pattern drawn with fully closed cells at its center.
+Un labyrinthe c'est une grille de cases avec des **murs** entre les cases. Tu rentres d'un côté et tu dois trouver la sortie.
 
-**Features:**
-- Random maze generation with reproducibility via seed
-- Perfect and imperfect maze modes
-- Hidden "42" pattern embedded in the maze
-- Terminal ASCII rendering with ANSI colors
-- Interactive menu: regenerate, show/hide path, rotate colors, quit
-- Exportable output file in hexadecimal format
-- Reusable `mazegen` pip package
+Voilà un vrai labyrinthe 4x3 visuellement :
+
+```
+┌───┬───┬───┬───┐
+│ E     │       │
+├───┘   └───┬───┤
+│       │       │
+├───┬───┘   └───┤
+│               S│
+└───┴───┴───┴───┘
+```
+
+**E** = entrée, **S** = sortie. Les `─` et `│` c'est les murs.
 
 ---
 
-## Instructions
+## Zoom sur UNE cellule
 
-### Requirements
+Prends la cellule du milieu. Elle ressemble à ça :
 
-- Python 3.10 or later
-- pip
-
-### Installation
-
-```bash
-# Install dependencies (flake8, mypy)
-make install
+```
+        NORD
+         ───
+OUEST │  (2,1) │ EST
+         ───
+        SUD
 ```
 
-### Run
+Une cellule c'est juste **une case** avec **4 côtés possibles**. Chaque côté peut avoir un mur ou pas.
 
-```bash
-# Run with a config file
-make run
-# or directly
-python3 a_maze_ing.py config.txt
+Cellule avec tous ses murs :
+```
+┌───┐
+│   │
+└───┘
 ```
 
-### Debug
-
-```bash
-make debug
+Cellule sans mur au NORD et à l'EST :
 ```
-
-### Lint
-
-```bash
-make lint
-# or stricter version
-make lint-strict
-```
-
-### Clean
-
-```bash
-make clean
+    
+│   
+└───┘
 ```
 
 ---
 
-## Configuration file format
+## La grille entière avec les cellules
 
-The configuration file uses `KEY=VALUE` pairs, one per line. Lines starting with `#` are comments.
+Voilà le même labyrinthe 4x3, mais cette fois je montre chaque cellule et ses coordonnées :
 
-| Key | Description | Example |
-|-----|-------------|---------|
-| `WIDTH` | Maze width (number of cells) | `WIDTH=20` |
-| `HEIGHT` | Maze height (number of cells) | `HEIGHT=15` |
-| `ENTRY` | Entry coordinates (x,y) | `ENTRY=0,0` |
-| `EXIT` | Exit coordinates (x,y) | `EXIT=19,14` |
-| `OUTPUT_FILE` | Output filename | `OUTPUT_FILE=maze.txt` |
-| `PERFECT` | Perfect maze (single path)? | `PERFECT=True` |
-| `SEED` | Seed for reproducibility (optional) | `SEED=42` |
-
-Example `config.txt`:
 ```
-# A-Maze-ing configuration
-WIDTH=20
-HEIGHT=15
-ENTRY=0,0
-EXIT=19,14
-OUTPUT_FILE=maze.txt
-PERFECT=True
-SEED=42
+┌───┬───┬───┬───┐
+│0,0│1,0│2,0│3,0│   ← ligne 0
+├───┼───┼───┼───┤
+│0,1│1,1│2,1│3,1│   ← ligne 1
+├───┼───┼───┼───┤
+│0,2│1,2│2,2│3,2│   ← ligne 2
+└───┴───┴───┴───┘
 ```
+
+Ça c'est **avant** que le DFS casse des murs. Toutes les cellules sont fermées.
+
+**Après** que le DFS passe :
+
+```
+┌───┬───┬───┬───┐
+│0,0  1,0│2,0  3,0│
+│   ┌───┘ └───┤
+│0,1  1,1│2,1  3,1│
+├───┘   └───┐   │
+│0,2  1,2  2,2  3,2│
+└───┴───┴───┴───┘
+```
+
+Le DFS a cassé des murs entre certaines cellules pour créer des chemins.
 
 ---
 
-## Maze generation algorithm
+## Ce qu'une cellule contient
 
-**Algorithm chosen: Recursive Backtracker (DFS)**
+Une cellule contient **juste un nombre** qui dit quels murs elle a.
 
-The maze is generated using the Depth-First Search (DFS) algorithm with an explicit stack (no recursion), also known as the Recursive Backtracker.
+Prenons la cellule **(1,0)** dans ce labyrinthe :
 
-**How it works:**
-1. Start from cell (0,0), mark it as visited, push it onto the stack
-2. While the stack is not empty:
-   - Look at the current cell (top of stack)
-   - Find all valid unvisited neighbors
-   - If neighbors exist: pick one at random, remove the wall between them, mark it visited, push it onto the stack
-   - If no neighbors: pop the stack (backtrack)
-3. When the stack is empty, every cell has been visited
+```
+┌───┬───┬───┬───┐
+│0,0  1,0│2,0  ...
+```
 
-**Why DFS?**
-- Simple to implement and understand
-- Guarantees full connectivity — every cell is reachable
-- Naturally generates perfect mazes (single path between any two cells)
-- Produces mazes with long winding corridors, which are visually interesting
-- Easy to justify and explain during peer evaluation
+La cellule (1,0) :
+- Mur NORD → **OUI** (c'est le bord du labyrinthe)
+- Mur EST → **OUI** (il y a un mur entre (1,0) et (2,0))
+- Mur SUD → **NON** (on peut aller vers (1,1))
+- Mur OUEST → **NON** (on peut aller vers (0,0))
 
-**PERFECT=False mode:**
-After DFS, 20% of cells randomly have an additional wall removed, creating loops and multiple paths.
+En bits ça donne :
+```
+OUEST  SUD  EST  NORD
+  0     0    1    1    =  0011  =  3
+```
+
+Donc dans la grille : `grille[0][1] = 3`
+
+Et la cellule **(0,0)** :
+- Mur NORD → OUI (bord)
+- Mur EST → NON (chemin vers (1,0))
+- Mur SUD → NON (chemin vers (0,1))
+- Mur OUEST → OUI (bord)
+
+```
+OUEST  SUD  EST  NORD
+  1     0    0    1    =  1001  =  9
+```
+
+Donc : `grille[0][0] = 9`
 
 ---
 
-## The "42" pattern
+## La grille complète en chiffres
 
-Before generation, a "42" pattern is drawn at the center of the grid by forcing certain cells to `0xF` (all walls closed) and adding them to the visited set. The DFS then generates paths around them, leaving the "42" visually intact.
+Ce labyrinthe 4x3 en mémoire ressemble à ça :
 
-The pattern is 7 cells wide and 5 cells tall. If the maze is too small to contain it, an error message is displayed and the pattern is skipped.
+```
+grille = [
+  [9,  3,  6,  12],   ← ligne 0  (y=0)
+  [5,  10, 5,  10],   ← ligne 1  (y=1)
+  [12, 6,  12, 6 ]    ← ligne 2  (y=2)
+]
+```
+
+Chaque chiffre = une cellule = ses murs encodés.
 
 ---
 
-## Output file format
+## Le lien avec tout le projet
 
-Each cell is encoded as one hexadecimal digit, where each bit represents a wall:
-
-| Bit | Direction |
-|-----|-----------|
-| 0 (LSB) | North |
-| 1 | East |
-| 2 | South |
-| 3 | West |
-
-- `1` = wall closed, `0` = wall open
-- Cells stored row by row, one row per line
-- After an empty line: entry coordinates, exit coordinates, shortest path (N/E/S/W letters)
-
----
-
-## Code reusability — mazegen package
-
-The maze generation logic is packaged as a reusable pip package called `mazegen`.
-
-### Install the package
-
-```bash
-pip install mazegen-1.0.0-py3-none-any.whl
 ```
-
-### Basic usage
-
-```python
-from src.maze import Maze
-
-# Create a maze
-maze = Maze(20, 15)
-
-# Place the "42" pattern
-maze.place_42_pattern()
-
-# Generate the maze with a seed
-maze.generate(seed=42, perfect=True)
-
-# Access the grid
-print(maze.grid)       # 2D list of integers (wall data)
-print(maze.width)      # 20
-print(maze.height)     # 15
-print(maze.visited)    # set of all visited cells
-
-# Check walls
-maze.has_wall(x=0, y=0, direction=1)   # True/False (1=NORTH)
-
-# Remove a wall manually
-maze.remove_wall(x=0, y=0, direction=2)  # removes EAST wall
-```
-
-### Custom parameters
-
-```python
-# Custom size
-maze = Maze(width=30, height=20)
-
-# Custom seed for reproducibility
-maze.generate(seed=99)          # always same maze
-maze.generate(seed=99)          # identical result
-
-# Imperfect maze (multiple paths)
-maze.generate(seed=42, perfect=False)
-```
-
-### Build the package from source
-
-```bash
-pip install build
-python3 -m build
-# Output: dist/mazegen-1.0.0-py3-none-any.whl and dist/mazegen-1.0.0.tar.gz
+config.txt dit WIDTH=4, HEIGHT=3
+        ↓
+on crée grille = [[15,15,15,15],[15,15,15,15],[15,15,15,15]]
+        ↓
+DFS change les 15 en d'autres chiffres (en cassant des murs)
+        ↓
+grille = [[9,3,6,12],[5,10,5,10],[12,6,12,6]]
+        ↓
+BFS lit la grille et trouve le chemin
+        ↓
+Affichage lit la grille et dessine les murs
+        ↓
+Output écrit les chiffres en hex dans maze.txt
 ```
 
 ---
 
-## Team and project management
+C'est plus clair maintenant ? Tu veux qu'on aille plus loin sur les bits ou tu veux qu'on passe à comment coder la classe `Maze` ? 🎯
 
-### Roles
+## BFS Maze.generate:
 
-| Member | Responsibilities |
-|--------|-----------------|
-| **mkacemi** | Maze grid structure, DFS generation algorithm, "42" pattern, terminal ASCII display, interactive menu, Makefile, pyproject.toml |
-| **elbarry** | config.txt parser, BFS shortest path algorithm, hexadecimal output file |
+random.seed(seed)
+stack = []
+visited = set()
+visited.add((0,0))
+stack.append((0,0))
 
-### Planning
+while stack:                              ← début boucle
+    regarder cellule en haut de stack
+    trouver voisins valides non visités
+    choisir un voisin au hasard
+    casser le mur
+    marquer visité + push dans stack
+    si pas de voisin → pop             ← fin boucle
 
-<!-- À compléter avec elbarry -->
-
-### What worked well
-
-- DFS implementation was clean and fast to develop step by step
-- Bit encoding for walls made the grid compact and efficient
-- ANSI color system with multiple palettes gives a great visual result
-- Separating `maze.py` and `display.py` kept the code modular
-
-### What could be improved
-
-<!-- À compléter en fin de projet -->
-
-### Tools used
-
-- **Claude (Anthropic)** — used as a pedagogical guide throughout the project: explaining concepts (DFS, BFS, bit encoding, stack), guiding implementation step by step, reviewing code logic. All code was written and understood by the students.
-- **VSCode** with Pylance extension for development
-- **flake8** and **mypy** for code quality
-- **Git** with feature branches per member
+nb voisin valide:
+1. Il est dans les limites de la grille
+2. Il n'est pas dans visited
 
 ---
 
----
+# Stack en python:
 
-## BFS (Shortest Path Algorithm)
+## créer
+stack = []
 
-To find the shortest path between the entry and the exit, the project uses the **Breadth-First Search (BFS)** algorithm.
+## push (ajouter en haut)
+stack.append(element)
 
-**Why BFS?**
+## pop (enlever le dernier)
+stack.pop()
 
-* Explores the maze level by level
-* Guarantees the **shortest path**
-* Deterministic and easy to reconstruct the solution
+## regarder le dernier sans l'enlever
+stack[-1]
 
----
-
-### How it works
-
-1. Start from the entry cell
-2. Explore all accessible neighbors
-3. Store visited cells to avoid loops
-4. Keep track of where each cell comes from
-5. Stop when reaching the exit
-6. Reconstruct the path from exit to entry
+## vérifier si vide
+len(stack) == 0
 
 ---
 
-### Data structures used
+# set en Python:
+
+## créer
+visited = set()
+
+## ajouter
+visited.add((1, 0))
+
+## vérifier si dedans
+(1, 0) in visited   # True
+(2, 0) in visited   # False
+
+## taille
+len(visited)
+
+# condition pour pattern
+WIDTH < 9   (7 pour le pattern + 1 marge de chaque côté)
+HEIGHT < 7  (5 pour le pattern + 1 marge en haut et en bas)
+
+█░█░███
+█░█░░░█
+███░███
+░░█░█░░
+░░█░███
+
+WIDTH  = nombre de colonnes  (horizontal, gauche → droite)
+HEIGHT = nombre de lignes    (vertical, haut → bas)
+
+---
+
+## BFS (trouver le plus court chemin)
+
+Maintenant que le labyrinthe est généré, il faut trouver le chemin entre l’entrée et la sortie.
+
+On utilise **BFS (Breadth-First Search)**.
+
+Contrairement au DFS :
+
+* DFS explore en profondeur
+* BFS explore **niveau par niveau**
+
+👉 Donc BFS trouve **le chemin le plus court**
+
+---
+
+### Principe
+
+```text
+partir de l'entrée
+↓
+explorer tous les voisins accessibles
+↓
+continuer en largeur
+↓
+atteindre la sortie
+↓
+reconstruire le chemin
+```
+
+---
+
+### Structure utilisée
 
 ```python
 queue = deque([start])
@@ -273,13 +272,15 @@ visited = {start}
 came_from = {}
 ```
 
-* `queue` → BFS exploration
-* `visited` → prevents revisiting cells
-* `came_from` → used to rebuild the path
+* `queue` → cellules à explorer
+* `visited` → éviter les doublons
+* `came_from` → permet de reconstruire le chemin
 
 ---
 
-### Path reconstruction
+### Reconstruction du chemin
+
+On part de la sortie et on remonte :
 
 ```python
 current = goal
@@ -287,74 +288,83 @@ current = goal
 while current != start:
     current = came_from[current]
     path.append(current)
+```
 
+Puis on inverse :
+
+```python
 path.reverse()
 ```
 
 ---
 
-### Important design choice
+### Important
 
-The path is stored in two formats:
+Le chemin est stocké sous deux formes :
 
 ```python
-self.path_list = path   # ordered (for output)
-self.path = set(path)   # fast lookup (for display)
+self.path_list = path   # ordre du chemin
+self.path = set(path)   # affichage rapide
 ```
 
-* **list** → preserves order (needed for directions)
-* **set** → fast membership check in display
+👉 La liste est nécessaire pour garder l’ordre
+👉 Le set est utilisé pour le display
 
 ---
 
-## Config Parser
+## Parsing (lecture du config.txt)
 
-The program reads a configuration file (`config.txt`) containing key-value pairs.
-
----
-
-### Parsing logic
+Le programme lit un fichier :
 
 ```text
-open file
-↓
-read line by line
-↓
-ignore comments
-↓
-split with "="
-↓
-store in dictionary
+WIDTH=10
+HEIGHT=8
+ENTRY=0,0
+EXIT=9,7
+PERFECT=True
+SEED=8
 ```
 
 ---
 
-### Validation rules
+### Étapes
 
-* Required keys must exist:
+```text
+ouvrir le fichier
+↓
+lire ligne par ligne
+↓
+split avec "="
+↓
+stocker dans un dictionnaire
+```
 
-  * WIDTH, HEIGHT, ENTRY, EXIT, OUTPUT_FILE, PERFECT
-* WIDTH and HEIGHT must be positive integers
-* ENTRY and EXIT must be inside the grid
+---
+
+### Validation
+
+On vérifie :
+
+* WIDTH et HEIGHT présents
+* ENTRY et EXIT présents
+* PERFECT présent
+* types corrects (int, bool)
+* coordonnées dans la grille
 * ENTRY ≠ EXIT
-* PERFECT must be True or False
-* SEED must be an integer (if present)
 
 ---
 
-### Error handling
+### Gestion d’erreurs
 
-The parser is designed to **never crash**:
-
-Examples:
+Le programme ne crash pas :
 
 ```text
-WIDTH=abc → error handled
-ENTRY=100,100 → out of bounds
-invalid line → detected
+WIDTH=abc → erreur
+ENTRY=100,100 → hors limites
+ligne sans "=" → erreur
 ```
 
-Using:
+On utilise :
 
 ```python
 try:
@@ -365,13 +375,9 @@ except:
 
 ---
 
-## Output File Generation
+## Output file (écriture du résultat)
 
-The program writes the maze to a file in a strict format required by the subject.
-
----
-
-### Structure
+Le programme génère un fichier :
 
 ```text
 HEX GRID
@@ -383,11 +389,12 @@ PATH
 
 ---
 
-### Example
+### Exemple
 
 ```text
 D391793953
 BAE852C47A
+AAFAFAFFFA
 ...
 
 0,0
@@ -397,9 +404,9 @@ ESSSSSEESSEEEEEE
 
 ---
 
-### Grid encoding
+### Écriture de la grille
 
-Each cell is converted to hexadecimal:
+Chaque cellule est convertie en hex :
 
 ```python
 format(cell, "X")
@@ -407,15 +414,15 @@ format(cell, "X")
 
 ---
 
-### Path conversion
+### Conversion du chemin
 
-From coordinates:
+Le chemin BFS :
 
 ```python
 [(0,0),(1,0),(1,1)]
 ```
 
-To directions:
+devient :
 
 ```text
 E S
@@ -423,7 +430,7 @@ E S
 
 ---
 
-### Direction logic
+### Logique
 
 ```python
 dx = x2 - x1
@@ -437,43 +444,42 @@ dy = y2 - y1
 
 ---
 
-## Program Flow
+## Organisation finale du programme
 
 ```text
 config.txt
 ↓
 parsing
 ↓
-maze generation (DFS)
+generate (DFS)
 ↓
-path solving (BFS)
+solve (BFS)
 ↓
-output file generation
+write_output
 ↓
 display
 ```
 
 ---
 
-## Important Behavior
+## Important
 
-Each time a new maze is generated:
+Chaque fois que le labyrinthe est régénéré :
 
 ```text
 generate → solve → write_output
 ```
 
-The output file is always updated accordingly.
+👉 Le fichier output est toujours à jour
 
 ---
 
-## Resources
+## Résumé
 
-- [Maze generation algorithms — Wikipedia](https://en.wikipedia.org/wiki/Maze_generation_algorithm)
-- [Recursive Backtracker explained — Think Labyrinth](https://www.astrolog.org/labyrnth/algrithm.htm)
-- [BFS algorithm — Wikipedia](https://en.wikipedia.org/wiki/Breadth-first_search)
-- [Python type hints — mypy documentation](https://mypy.readthedocs.io/)
-- [PEP 257 — Docstring conventions](https://peps.python.org/pep-0257/)
-- [ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code)
+* DFS → génère le labyrinthe
+* BFS → trouve le plus court chemin
+* parsing → lit et valide les données
+* output → écrit le résultat
+* set + list → performance + ordre
 
-█
+---
