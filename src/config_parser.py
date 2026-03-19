@@ -82,7 +82,7 @@ def parse_config(filename: str) -> Dict[str, str]:
                 raise ValueError(f"Invalid line: {line}")
 
             key, value = line.split("=", 1)
-            config[key] = value
+            config[key.strip().upper()] = value.strip()
 
     return config
 
