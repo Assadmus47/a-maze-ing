@@ -1,12 +1,222 @@
-*This project has been created as part of the 42 curriculum by elbarry and mkacemi*
+*This project has been created as part of the 42 curriculum by elbarry, mkacemi*
+
+# 🌀 A-Maze-ing
 
 ---
 
-## C'est quoi un labyrinthe ?
+## 📋 Description
 
-Un labyrinthe c'est une grille de cases avec des **murs** entre les cases. Tu rentres d'un côté et tu dois trouver la sortie.
+**A-Maze-ing** generates, solves, displays and exports mazes from a configuration file.
 
-Voilà un vrai labyrinthe 4x3 visuellement :
+The program is built around a reusable maze module and follows this workflow:
+
+1. Read and validate a configuration file
+2. Create the maze grid
+3. Generate the maze using **Depth-First Search (DFS)** with backtracking
+4. Solve the maze using **Breadth-First Search (BFS)**
+5. Display the maze in the terminal
+6. Export the result to an output file
+
+---
+
+## ⚙️ Requirements
+
+- Python **3.10** or later
+- `pip`
+- A **UTF-8 compatible terminal** for proper maze rendering
+
+---
+
+## 🚀 Installation
+
+Clone the repository and move into the project directory:
+
+```bash
+git clone <repository_url>
+cd A-Maze-ing
+```
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Upgrade pip and install the project:
+
+```bash
+python3 -m pip install --upgrade pip
+python3 -m pip install .
+```
+
+---
+
+## ▶️ Running the Project
+
+You can run the project in two ways:
+
+```bash
+# Using the main Python file
+python3 a_maze_ing.py
+
+# Or using the installed entry point
+mazegen
+```
+
+---
+
+## 📦 Building the Package
+
+```bash
+python3 -m pip install build
+python3 -m build
+```
+
+The generated `.tar.gz` and `.whl` files will appear in the `dist/` directory.
+
+---
+
+## 🧹 Linting & Type Checking
+
+```bash
+flake8 .
+mypy .
+
+# Or if a Makefile is provided:
+make lint
+make lint-strict
+```
+
+---
+
+## 🗂️ Configuration File
+
+The project reads a configuration file to define maze settings.
+
+### Example
+
+```ini
+WIDTH=10
+HEIGHT=8
+ENTRY=0,0
+EXIT=9,7
+PERFECT=True
+SEED=8
+```
+
+### Parameters
+
+| Key | Type | Required | Description |
+|---|---|---|---|
+| `WIDTH` | integer | ✅ | Number of columns (strictly positive) |
+| `HEIGHT` | integer | ✅ | Number of rows (strictly positive) |
+| `ENTRY` | `x,y` | ✅ | Entry point coordinates (must be inside the grid) |
+| `EXIT` | `x,y` | ✅ | Exit point coordinates (must differ from ENTRY) |
+| `PERFECT` | boolean | ✅ | If `True`, exactly one path exists between any two cells |
+| `SEED` | integer | ✅ | Initializes the RNG for deterministic generation |
+
+### Parsing & Validation
+
+The parser:
+- Reads the file line by line and splits on `=`
+- Converts values to their expected types
+- Validates all constraints
+
+Invalid configurations (e.g. `WIDTH=abc`, `ENTRY=100,100`, missing keys) are rejected with a clear error message.
+
+---
+
+## 🏗️ Maze Generation — DFS with Backtracking
+
+The algorithm starts from an initial cell and explores by always moving to an unvisited neighbor. When stuck, it backtracks using a stack.
+
+```python
+random.seed(seed)
+stack = [start]
+visited = {start}
+
+while stack:
+    current = stack[-1]
+    neighbors = get_unvisited_neighbors(current)
+    if neighbors:
+        next_cell = random.choice(neighbors)
+        remove_wall(current, next_cell)
+        visited.add(next_cell)
+        stack.append(next_cell)
+    else:
+        stack.pop()  # backtrack
+```
+
+**Why DFS?** Simple, efficient on grids, produces interesting mazes, and naturally demonstrates stacks, backtracking, and random neighbor selection.
+
+---
+
+## 🔍 Maze Solving — BFS (Shortest Path)
+
+BFS explores the maze level by level, guaranteeing the **shortest path** from entry to exit.
+
+```python
+queue = deque([start])
+visited = {start}
+came_from = {}
+
+# Path reconstruction
+current = goal
+while current != start:
+    current = came_from[current]
+    path.append(current)
+path.reverse()
+```
+
+The path is stored in two forms:
+- `path_list` — ordered list for export
+- `path` — set for fast terminal display
+
+---
+
+## 🧱 Internal Representation
+
+Each cell is an integer encoding its walls using **bit flags**:
+
+| Direction | Constant | Bit |
+|---|---|---|
+| NORTH | `1` | `0001` |
+| EAST | `2` | `0010` |
+| SOUTH | `4` | `0100` |
+| WEST | `8` | `1000` |
+
+A cell with walls on NORTH and WEST = `1 + 8 = 9`.
+
+This compact representation allows fast wall checking, addition, and removal.
+
+---
+
+## 📤 Output File
+
+The exported file contains:
+
+- The maze grid in **hexadecimal** format
+- Entry and exit coordinates
+- The solution path as movement letters (`N`, `S`, `E`, `W`)
+
+### Example
+
+```
+D391793953
+BAE852C47A
+AAFAFAFFFA
+
+0,0
+9,7
+ESSSSSEESSEEEEEE
+```
+
+Path conversion: coordinate differences map to directions (`dx=1 → E`, `dy=1 → S`, etc.)
+
+---
+
+## 🖥️ Terminal Display
 
 ```
 ┌───┬───┬───┬───┐
@@ -18,468 +228,115 @@ Voilà un vrai labyrinthe 4x3 visuellement :
 └───┴───┴───┴───┘
 ```
 
-**E** = entrée, **S** = sortie. Les `─` et `│` c'est les murs.
+`E` = entry · `S` = exit · solution path highlighted
 
 ---
 
-## Zoom sur UNE cellule
-
-Prends la cellule du milieu. Elle ressemble à ça :
+## 🔄 Project Workflow
 
 ```
-        NORD
-         ───
-OUEST │  (2,1) │ EST
-         ───
-        SUD
-```
-
-Une cellule c'est juste **une case** avec **4 côtés possibles**. Chaque côté peut avoir un mur ou pas.
-
-Cellule avec tous ses murs :
-```
-┌───┐
-│   │
-└───┘
-```
-
-Cellule sans mur au NORD et à l'EST :
-```
-    
-│   
-└───┘
-```
-
----
-
-## La grille entière avec les cellules
-
-Voilà le même labyrinthe 4x3, mais cette fois je montre chaque cellule et ses coordonnées :
-
-```
-┌───┬───┬───┬───┐
-│0,0│1,0│2,0│3,0│   ← ligne 0
-├───┼───┼───┼───┤
-│0,1│1,1│2,1│3,1│   ← ligne 1
-├───┼───┼───┼───┤
-│0,2│1,2│2,2│3,2│   ← ligne 2
-└───┴───┴───┴───┘
-```
-
-Ça c'est **avant** que le DFS casse des murs. Toutes les cellules sont fermées.
-
-**Après** que le DFS passe :
-
-```
-┌───┬───┬───┬───┐
-│0,0  1,0│2,0  3,0│
-│   ┌───┘ └───┤
-│0,1  1,1│2,1  3,1│
-├───┘   └───┐   │
-│0,2  1,2  2,2  3,2│
-└───┴───┴───┴───┘
-```
-
-Le DFS a cassé des murs entre certaines cellules pour créer des chemins.
-
----
-
-## Ce qu'une cellule contient
-
-Une cellule contient **juste un nombre** qui dit quels murs elle a.
-
-Prenons la cellule **(1,0)** dans ce labyrinthe :
-
-```
-┌───┬───┬───┬───┐
-│0,0  1,0│2,0  ...
-```
-
-La cellule (1,0) :
-- Mur NORD → **OUI** (c'est le bord du labyrinthe)
-- Mur EST → **OUI** (il y a un mur entre (1,0) et (2,0))
-- Mur SUD → **NON** (on peut aller vers (1,1))
-- Mur OUEST → **NON** (on peut aller vers (0,0))
-
-En bits ça donne :
-```
-OUEST  SUD  EST  NORD
-  0     0    1    1    =  0011  =  3
-```
-
-Donc dans la grille : `grille[0][1] = 3`
-
-Et la cellule **(0,0)** :
-- Mur NORD → OUI (bord)
-- Mur EST → NON (chemin vers (1,0))
-- Mur SUD → NON (chemin vers (0,1))
-- Mur OUEST → OUI (bord)
-
-```
-OUEST  SUD  EST  NORD
-  1     0    0    1    =  1001  =  9
-```
-
-Donc : `grille[0][0] = 9`
-
----
-
-## La grille complète en chiffres
-
-Ce labyrinthe 4x3 en mémoire ressemble à ça :
-
-```
-grille = [
-  [9,  3,  6,  12],   ← ligne 0  (y=0)
-  [5,  10, 5,  10],   ← ligne 1  (y=1)
-  [12, 6,  12, 6 ]    ← ligne 2  (y=2)
-]
-```
-
-Chaque chiffre = une cellule = ses murs encodés.
-
----
-
-## Le lien avec tout le projet
-
-```
-config.txt dit WIDTH=4, HEIGHT=3
-        ↓
-on crée grille = [[15,15,15,15],[15,15,15,15],[15,15,15,15]]
-        ↓
-DFS change les 15 en d'autres chiffres (en cassant des murs)
-        ↓
-grille = [[9,3,6,12],[5,10,5,10],[12,6,12,6]]
-        ↓
-BFS lit la grille et trouve le chemin
-        ↓
-Affichage lit la grille et dessine les murs
-        ↓
-Output écrit les chiffres en hex dans maze.txt
-```
-
----
-
-C'est plus clair maintenant ? Tu veux qu'on aille plus loin sur les bits ou tu veux qu'on passe à comment coder la classe `Maze` ? 🎯
-
-## BFS Maze.generate:
-
-random.seed(seed)
-stack = []
-visited = set()
-visited.add((0,0))
-stack.append((0,0))
-
-while stack:                              ← début boucle
-    regarder cellule en haut de stack
-    trouver voisins valides non visités
-    choisir un voisin au hasard
-    casser le mur
-    marquer visité + push dans stack
-    si pas de voisin → pop             ← fin boucle
-
-nb voisin valide:
-1. Il est dans les limites de la grille
-2. Il n'est pas dans visited
-
----
-
-# Stack en python:
-
-## créer
-stack = []
-
-## push (ajouter en haut)
-stack.append(element)
-
-## pop (enlever le dernier)
-stack.pop()
-
-## regarder le dernier sans l'enlever
-stack[-1]
-
-## vérifier si vide
-len(stack) == 0
-
----
-
-# set en Python:
-
-## créer
-visited = set()
-
-## ajouter
-visited.add((1, 0))
-
-## vérifier si dedans
-(1, 0) in visited   # True
-(2, 0) in visited   # False
-
-## taille
-len(visited)
-
-# condition pour pattern
-WIDTH < 9   (7 pour le pattern + 1 marge de chaque côté)
-HEIGHT < 7  (5 pour le pattern + 1 marge en haut et en bas)
-
-█░█░███
-█░█░░░█
-███░███
-░░█░█░░
-░░█░███
-
-WIDTH  = nombre de colonnes  (horizontal, gauche → droite)
-HEIGHT = nombre de lignes    (vertical, haut → bas)
-
----
-
-## BFS (trouver le plus court chemin)
-
-Maintenant que le labyrinthe est généré, il faut trouver le chemin entre l’entrée et la sortie.
-
-On utilise **BFS (Breadth-First Search)**.
-
-Contrairement au DFS :
-
-* DFS explore en profondeur
-* BFS explore **niveau par niveau**
-
-👉 Donc BFS trouve **le chemin le plus court**
-
----
-
-### Principe
-
-```text
-partir de l'entrée
-↓
-explorer tous les voisins accessibles
-↓
-continuer en largeur
-↓
-atteindre la sortie
-↓
-reconstruire le chemin
-```
-
----
-
-### Structure utilisée
-
-```python
-queue = deque([start])
-visited = {start}
-came_from = {}
-```
-
-* `queue` → cellules à explorer
-* `visited` → éviter les doublons
-* `came_from` → permet de reconstruire le chemin
-
----
-
-### Reconstruction du chemin
-
-On part de la sortie et on remonte :
-
-```python
-current = goal
-
-while current != start:
-    current = came_from[current]
-    path.append(current)
-```
-
-Puis on inverse :
-
-```python
-path.reverse()
-```
-
----
-
-### Important
-
-Le chemin est stocké sous deux formes :
-
-```python
-self.path_list = path   # ordre du chemin
-self.path = set(path)   # affichage rapide
-```
-
-👉 La liste est nécessaire pour garder l’ordre
-👉 Le set est utilisé pour le display
-
----
-
-## Parsing (lecture du config.txt)
-
-Le programme lit un fichier :
-
-```text
-WIDTH=10
-HEIGHT=8
-ENTRY=0,0
-EXIT=9,7
-PERFECT=True
-SEED=8
-```
-
----
-
-### Étapes
-
-```text
-ouvrir le fichier
-↓
-lire ligne par ligne
-↓
-split avec "="
-↓
-stocker dans un dictionnaire
-```
-
----
-
-### Validation
-
-On vérifie :
-
-* WIDTH et HEIGHT présents
-* ENTRY et EXIT présents
-* PERFECT présent
-* types corrects (int, bool)
-* coordonnées dans la grille
-* ENTRY ≠ EXIT
-
----
-
-### Gestion d’erreurs
-
-Le programme ne crash pas :
-
-```text
-WIDTH=abc → erreur
-ENTRY=100,100 → hors limites
-ligne sans "=" → erreur
-```
-
-On utilise :
-
-```python
-try:
-    ...
-except:
-    ...
-```
-
----
-
-## Output file (écriture du résultat)
-
-Le programme génère un fichier :
-
-```text
-HEX GRID
-
-ENTRY
-EXIT
-PATH
-```
-
----
-
-### Exemple
-
-```text
-D391793953
-BAE852C47A
-AAFAFAFFFA
-...
-
-0,0
-9,7
-ESSSSSEESSEEEEEE
-```
-
----
-
-### Écriture de la grille
-
-Chaque cellule est convertie en hex :
-
-```python
-format(cell, "X")
-```
-
----
-
-### Conversion du chemin
-
-Le chemin BFS :
-
-```python
-[(0,0),(1,0),(1,1)]
-```
-
-devient :
-
-```text
-E S
-```
-
----
-
-### Logique
-
-```python
-dx = x2 - x1
-dy = y2 - y1
-```
-
-* `dx = 1` → E
-* `dx = -1` → W
-* `dy = 1` → S
-* `dy = -1` → N
-
----
-
-## Organisation finale du programme
-
-```text
 config.txt
-↓
-parsing
-↓
-generate (DFS)
-↓
-solve (BFS)
-↓
-write_output
-↓
-display
+    ↓
+ parsing
+    ↓
+validation
+    ↓
+maze generation (DFS)
+    ↓
+maze solving (BFS)
+    ↓
+output file export
+    ↓
+terminal display
 ```
 
----
-
-## Important
-
-Chaque fois que le labyrinthe est régénéré :
-
-```text
-generate → solve → write_output
-```
-
-👉 Le fichier output est toujours à jour
+Every regeneration triggers: **generate → solve → write_output**, keeping the output file always in sync.
 
 ---
 
-## Résumé
+## 🧩 Reusable Module
 
-* DFS → génère le labyrinthe
-* BFS → trouve le plus court chemin
-* parsing → lit et valide les données
-* output → écrit le résultat
-* set + list → performance + ordre
+The maze engine is fully decoupled from configuration parsing, terminal rendering, and file output. It can be imported independently into:
+
+- A graphical maze visualizer
+- A pathfinding test suite
+- Another terminal application
 
 ---
+
+## 👥 Team and Project Management
+
+### Roles of each team member
+
+**elbarry**
+- Project organization and structure
+- Testing and code review
+- Documentation contributions
+- Implementation support
+
+**mkacemi**
+- Maze engine implementation (grid, walls, bit representation)
+- Configuration parsing and validation logic
+- DFS generation and BFS solving integration
+- Packaging and terminal rendering behavior
+
+### Anticipated planning and how it evolved
+
+The initial plan was sequential:
+
+1. Define the project structure
+2. Implement config parsing
+3. Implement the maze grid
+4. Implement maze generation
+5. Implement maze solving
+6. Implement terminal display
+7. Implement output export
+8. Write documentation and package the project
+
+In practice, the planning became **more iterative** than linear. Some tasks required more back-and-forth than expected, especially the internal wall representation, keeping display logic readable, path storage for both export and display, and packaging with `pyproject.toml`.
+
+### What worked well
+
+- Clear separation between parsing, generation, solving, display, and output
+- A grid representation that stayed efficient throughout
+- Using DFS for generation and BFS for solving was a natural and complementary pairing
+- Progressive testing while building each feature avoided large integration bugs
+
+### What could be improved
+
+- More automated tests from the start
+- Cleaner abstraction between display and maze internals
+- A more formal package structure defined earlier in the project
+- Writing the README earlier to avoid documentation debt at the end
+
+### Tools used
+
+- Python 3, `venv`, `pip`
+- `pyproject.toml`, `build`
+- `flake8`, `mypy`
+- Git
+- Terminal-based manual testing
+- AI assistance for explanations, packaging guidance, and README verification
+
+---
+
+## 🤖 Use of AI
+
+AI was used as a **support tool** for:
+- Clarifying Python syntax and type annotations
+- Understanding packaging steps with `pyproject.toml`
+- Checking algorithm explanations
+- Improving documentation structure
+
+AI was **not** used to replace understanding of project logic. Implementation, debugging, and algorithm integration were done as part of the development work.
+
+---
+
+## 📚 Resources
+
+- [Python official documentation](https://docs.python.org/3/)
+- [`random` module](https://docs.python.org/3/library/random.html)
+- [`collections.deque`](https://docs.python.org/3/library/collections.html#collections.deque)
+- [Packaging with `pyproject.toml`](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
+- [flake8](https://flake8.pycqa.org/)
+- [mypy](https://mypy.readthedocs.io/)

@@ -12,12 +12,12 @@ install:
 	$(PYTHON) -m pip install flake8 mypy
 
 lint:
-	flake8 .
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	flake8 . --exclude=.venv,__pycache__,build,dist,*.egg-info
+	mypy . --exclude '(^|/)\.venv(/|$$)'
 
 lint-strict:
-	flake8 .
-	mypy . --strict
+	flake8 . --exclude=.venv,__pycache__,build,dist,*.egg-info
+	mypy . --exclude '(^|/)\.venv(/|$$)' --strict
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
