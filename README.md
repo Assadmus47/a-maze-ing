@@ -54,14 +54,17 @@ python3 -m pip install .
 
 ## ▶️ Running the Project
 
-You can run the project in two ways:
+You can run the project in three ways:
 
 ```bash
 # Using the main Python file
-python3 a_maze_ing.py
+python3 a_maze_ing.py config.txt
 
 # Or using the installed entry point
-mazegen
+mazegen config.txt
+
+# Or using the Makefile rule
+make run
 ```
 
 ---
@@ -97,12 +100,13 @@ The project reads a configuration file to define maze settings.
 ### Example
 
 ```ini
-WIDTH=10
-HEIGHT=8
+WIDTH=20
+HEIGHT=20
 ENTRY=0,0
-EXIT=9,7
+EXIT=5,9
 PERFECT=True
-SEED=8
+OUTPUT_FILE=maze_output.txt
+SEED=46
 ```
 
 ### Parameters
@@ -114,6 +118,7 @@ SEED=8
 | `ENTRY` | `x,y` | ✅ | Entry point coordinates (must be inside the grid) |
 | `EXIT` | `x,y` | ✅ | Exit point coordinates (must differ from ENTRY) |
 | `PERFECT` | boolean | ✅ | If `True`, exactly one path exists between any two cells |
+| `OUTPUT_FILE` | string | ✅ | Path to the output file where the maze and solution are exported |
 | `SEED` | integer | ✅ | Initializes the RNG for deterministic generation |
 
 ### Parsing & Validation
@@ -129,24 +134,34 @@ Invalid configurations (e.g. `WIDTH=abc`, `ENTRY=100,100`, missing keys) are rej
 
 ## 🏗️ Maze Generation — DFS with Backtracking
 
-The algorithm starts from an initial cell and explores by always moving to an unvisited neighbor. When stuck, it backtracks using a stack.
+The algorithm starts from cell `(0, 0)` and explores the maze by always moving to a valid unvisited neighbor, chosen at random. When no such neighbor exists, it backtracks by popping the stack. This is classic **iterative DFS with backtracking**.
 
 ```python
 random.seed(seed)
-stack = [start]
-visited = {start}
+stack = []
+self.visited.add((0, 0))
+stack.append((0, 0))
 
 while stack:
-    current = stack[-1]
-    neighbors = get_unvisited_neighbors(current)
-    if neighbors:
-        next_cell = random.choice(neighbors)
-        remove_wall(current, next_cell)
-        visited.add(next_cell)
-        stack.append(next_cell)
+    x, y = stack[-1]
+    valid_neighbors = []
+
+    for i in range(4):
+        direction = 1 << i
+        if self.is_valid_neighbor(x, y, direction):
+            valid_neighbors.append(direction)
+
+    if not valid_neighbors:
+        stack.pop()  # backtrack: no unvisited neighbor, go back
     else:
-        stack.pop()  # backtrack
+        direction = random.choice(valid_neighbors)
+        self.remove_wall(x, y, direction)
+        dx, dy = DIRECTIONS[direction]
+        self.visited.add((x + dx, y + dy))
+        stack.append((x + dx, y + dy))
 ```
+
+When `PERFECT=False`, an additional pass randomly removes ~20% of extra walls, creating multiple paths between some cells (imperfect maze).
 
 **Why DFS?** Simple, efficient on grids, produces interesting mazes, and naturally demonstrates stacks, backtracking, and random neighbor selection.
 
@@ -161,12 +176,32 @@ queue = deque([start])
 visited = {start}
 came_from = {}
 
+while queue:
+    x, y = queue.popleft()
+
+    if (x, y) == goal:
+        break
+
+    for direction, (dx, dy) in DIRECTIONS.items():
+        if self.has_wall(x, y, direction):
+            continue
+        nx, ny = x + dx, y + dy
+        if (nx, ny) in visited:
+            continue
+        visited.add((nx, ny))
+        came_from[(nx, ny)] = (x, y)
+        queue.append((nx, ny))
+
 # Path reconstruction
+path = [goal]
 current = goal
 while current != start:
     current = came_from[current]
     path.append(current)
 path.reverse()
+
+self.path_list = path
+self.path = set(path)
 ```
 
 The path is stored in two forms:
@@ -279,35 +314,6 @@ The maze engine is fully decoupled from configuration parsing, terminal renderin
 - Configuration parsing and validation logic
 - DFS generation and BFS solving integration
 - Packaging and terminal rendering behavior
-
-### Anticipated planning and how it evolved
-
-The initial plan was sequential:
-
-1. Define the project structure
-2. Implement config parsing
-3. Implement the maze grid
-4. Implement maze generation
-5. Implement maze solving
-6. Implement terminal display
-7. Implement output export
-8. Write documentation and package the project
-
-In practice, the planning became **more iterative** than linear. Some tasks required more back-and-forth than expected, especially the internal wall representation, keeping display logic readable, path storage for both export and display, and packaging with `pyproject.toml`.
-
-### What worked well
-
-- Clear separation between parsing, generation, solving, display, and output
-- A grid representation that stayed efficient throughout
-- Using DFS for generation and BFS for solving was a natural and complementary pairing
-- Progressive testing while building each feature avoided large integration bugs
-
-### What could be improved
-
-- More automated tests from the start
-- Cleaner abstraction between display and maze internals
-- A more formal package structure defined earlier in the project
-- Writing the README earlier to avoid documentation debt at the end
 
 ### Tools used
 
