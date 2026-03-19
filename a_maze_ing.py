@@ -148,6 +148,12 @@ def main() -> None:
 
     maze.place_42_pattern()
     maze.generate(config["seed"], config["perfect"])
+
+    if ((config["entry"] in maze.forty_two) or
+            (config["exit"] in maze.forty_two)):
+        print("Invalid input: enter differant values of entrey ")
+        return
+
     maze.solve()
     menu(maze, config)
 

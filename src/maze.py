@@ -150,6 +150,10 @@ class Maze:
                         if self.height - 1 < y1 or y1 < 0:
                             continue
 
+                        if ((x, y) in self.forty_two or
+                                (x1, y1) in self.forty_two):
+                            continue
+
                         self.remove_wall(x, y, direction)
 
     def place_42_pattern(self) -> None:
