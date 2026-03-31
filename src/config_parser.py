@@ -6,7 +6,7 @@ def parse_entry(value: str) -> tuple[int, int]:
     return int(x_str), int(y_str)
 
 
-def validate_config(raw: dict) -> dict:
+def validate_config(raw: dict[str, str]) -> dict[str, object]:
 
     required = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
 
@@ -87,7 +87,7 @@ def parse_config(filename: str) -> Dict[str, str]:
     return config
 
 
-def load_config(filename: str) -> dict:
+def load_config(filename: str) -> dict[str, object]:
     raw = parse_config(filename)
 
     return validate_config(raw)

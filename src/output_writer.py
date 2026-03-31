@@ -1,5 +1,10 @@
+from typing import TYPE_CHECKING
 
-def write_output(filename: str, maze) -> None:
+if TYPE_CHECKING:
+    from src.maze import Maze
+
+
+def write_output(filename: str, maze: "Maze") -> None:
 
     with open(filename, "w", encoding="utf-8") as f:
 
@@ -16,7 +21,7 @@ def write_output(filename: str, maze) -> None:
         f.write(path + "\n")
 
 
-def path_to_directions(path):
+def path_to_directions(path: list[tuple[int, int]]) -> str:
 
     directions = []
 

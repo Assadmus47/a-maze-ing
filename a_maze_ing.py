@@ -1,11 +1,10 @@
-
 from src import Maze, draw
 from src.config_parser import load_config
 from src.output_writer import write_output
 
 import sys
-
 import random
+from typing import cast
 
 colors = [
     [  # Palette 1
@@ -81,23 +80,26 @@ colors = [
 ]
 
 
-def check_entree_exit(maze: Maze, config: dict) -> bool:
-    if (config["entry"] in maze.forty_two):
+def check_entree_exit(maze: Maze, config: dict[str, object]) -> bool:
+    entry = cast(tuple[int, int], config["entry"])
+    exit_ = cast(tuple[int, int], config["exit"])
+
+    if entry in maze.forty_two:
         print("CHOOSE VALID VALUE OF ENTREE OUTSIDE OF THE 42 PATTERN")
         return False
-    if (config["exit"] in maze.forty_two):
+    if exit_ in maze.forty_two:
         print("CHOOSE VALID VALUE OF EXIT OUTSIDE OF THE 42 PATTERN")
         return False
 
     return True
 
 
-def menu(maze: Maze, config) -> None:
+def menu(maze: Maze, config: dict[str, object]) -> None:
     choice: int = 0
     color_choice: int = 0
     flage: bool = False
 
-    while (choice != 4):
+    while choice != 4:
         try:
             draw(maze, colors[color_choice], flage)
             print()
@@ -109,33 +111,39 @@ def menu(maze: Maze, config) -> None:
             print("4. Quit")
             choice = int(input("Choice? (1-4): "))
             print()
+
             if choice > 4 or choice < 1:
                 print("please enter a choice between 1 and 4")
                 continue
+
         except ValueError as e:
             print()
             print("error:", e)
             continue
 
         if choice == 1:
-            maze = Maze(config["width"], config["height"])
+            width = cast(int, config["width"])
+            height = cast(int, config["height"])
+            entry = cast(tuple[int, int], config["entry"])
+            exit_ = cast(tuple[int, int], config["exit"])
+            perfect = cast(bool, config["perfect"])
 
-            maze.entree = config["entry"]
-            maze.sortie = config["exit"]
+            maze = Maze(width, height)
+            maze.entree = entry
+            maze.sortie = exit_
 
             maze.place_42_pattern()
-            maze.generate(random.randint(0, 99999), config["perfect"])
+            maze.generate(random.randint(0, 99999), perfect)
             maze.solve()
+
             write_output("maze_output.txt", maze)
+
         elif choice == 2:
-            if flage:
-                flage = False
-            else:
-                flage = True
+            flage = not flage
+
         elif choice == 3:
-            color_choice += 1
-            if color_choice == 10:
-                color_choice = 0
+            color_choice = (color_choice + 1) % 10
+
         elif choice == 4:
             print("close")
             return
@@ -147,28 +155,39 @@ def main() -> None:
         return
 
     config_file = sys.argv[1]
+
     try:
-        config = load_config(config_file)
+        config: dict[str, object] = load_config(config_file)
     except Exception as e:
         print("Config error:", e)
         return
 
-    if config["width"] < 9 or config["height"] < 7:
+    width = cast(int, config["width"])
+    height = cast(int, config["height"])
+
+    if width < 9 or height < 7:
         print("Error: maze must be at least 9x7")
         return
 
-    maze = Maze(config["width"], config["height"])
-    maze.entree = config["entry"]
-    maze.sortie = config["exit"]
+    entry = cast(tuple[int, int], config["entry"])
+    exit_ = cast(tuple[int, int], config["exit"])
+    seed = cast(int, config["seed"])
+    perfect = cast(bool, config["perfect"])
+    output_file = cast(str, config["output_file"])
+
+    maze = Maze(width, height)
+    maze.entree = entry
+    maze.sortie = exit_
 
     maze.place_42_pattern()
-    maze.generate(config["seed"], config["perfect"])
+    maze.generate(seed, perfect)
 
     if not check_entree_exit(maze, config):
         return
 
     maze.solve()
-    write_output(config["output_file"], maze)
+    write_output(output_file, maze)
+
     menu(maze, config)
 
 

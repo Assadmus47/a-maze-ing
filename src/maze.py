@@ -182,7 +182,7 @@ class Maze:
                     self.forty_two.add((x, y))
                     self.grid[y][x] = 15
 
-    def solve(self):
+    def solve(self) -> None:
         start = self.entree
         goal = self.sortie
 
